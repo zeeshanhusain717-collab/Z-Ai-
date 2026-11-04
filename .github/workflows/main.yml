@@ -99,8 +99,8 @@ jobs:
                   applicationId "com.zeeshan.ai"
                   minSdk 26
                   targetSdk 34
-                  versionCode 10
-                  versionName "10.0"
+                  versionCode 11
+                  versionName "11.0"
                   externalNativeBuild {
                       cmake {
                           cppFlags "-std=c++17 -O2"
@@ -407,7 +407,7 @@ jobs:
               "बीस","इक्कीस","बाईस","तेईस","चौबीस","पच्चीस","छब्बीस","सत्ताईस","अट्ठाईस","उनतीस",
               "तीस","इकतीस","बत्तीस","तैंतीस","चौंतीस","पैंतीस","छत्तीस","सैंतीस","अड़तीस","उनतालीस",
               "चालीस","इकतालीस","बयालीस","तैंतालीस","चवालीस","पैंतालीस","छियालीस","सैंतालीस","अड़तालीस","उनचास",
-              "पचास","इक्यावन","बावन","तिरेपन","चौवन","pचपन","छप्पन","सत्तावन","अट्ठावन","उनसठ",
+              "पचास","इक्यावन","बावन","तिरेपन","चौवन","पचपन","छप्पन","सत्तावन","अट्ठावन","उनसठ",
               "साठ","इकसठ","बासठ","तिरसठ","चौंसठ","पैंसठ","छियासठ","सड़सठ","अड़सठ","उनहत्तर",
               "सत्तर","इकहत्तर","बहत्तर","तिहत्तर","चौहत्तर","पचहत्तर","छिहत्तर","सतहत्तर","अठहत्तर","उन्यासी",
               "अस्सी","इक्यासी","बयासी","तिरासी","चौरासी","पचासी","छियासी","सत्तासी","अट्ठासी","नवासी",
@@ -699,7 +699,7 @@ jobs:
           [क्रिएटर और प्रश्नोत्तर प्रोफ़ाइल]
           यूजर: तुम्हारा नाम क्या है? एआई: मेरा नाम Z+2AI है, जिसे ज़ीशान ने शून्य से डिज़ाइन और विकसित किया है।
           यूजर: तुम्हें किसने बनाया है? एआई: मुझे मेरे मालिक और डेवलपर ज़ीशान ने बनाया है।
-          यूजर: तुम्हारे रचयिता कौन हैं? एआई: मेरे रचयिता ज़ीशान हैं, जो इस सिस्टम के मुख्य प्रोग्रामर हैं।
+          setUser: तुम्हारे रचयिता कौन हैं? एआई: मेरे रचयिता ज़ीशान हैं, जो इस सिस्टम के मुख्य प्रोग्रामर हैं।
           यूजर: क्या तुम्हें ज़ीशान ने बनाया है? एआई: हाँ, मुझे ज़ीशान ने ही अपनी कोडिंग और तकनीकी कौशल से बनाया है।
           यूजर: तुम्हारा मालिक कौन है? एआई: मेरे मालिक और निर्माता ज़ीशान हैं।
           यूजर: ज़ीशान कौन हैं? एआई: ज़ीशान मेरे क्रिएटर और डेवलपर हैं, जिन्होंने मुझे सोचने और समझने की क्षमता दी है।
@@ -896,19 +896,19 @@ jobs:
                   const LexEntry* tVerb = lex_.find(pr.first);
                   const LexEntry* tObj = lex_.find(pr.second);
                   std::vector<std::string> lines;
-                  grammar::Clause c1; c1.adverb = lex_.find("एक समय"); c1.subject = hero; c1.subjectAdj = adj; c1.locative = place; c1.verb = lex_.find("रह"); c1.tense = grammar::Tense::Present;
+                  grammar::Clause c1; c1.adverb = lex_.find("एक समय"); c1.subject = hero; c1.subjectAdj = adj; c1.locative = place; c1.verb = lex_.find("रह"); c1.tense = Tense::Present;
                   lines.push_back(grammar::renderClause(c1));
-                  grammar::Clause c2; c2.adverb = lex_.find("सुबह"); c2.subject = other; c2.object = tObj; c2.verb = tVerb; c2.tense = grammar::Tense::Past;
+                  grammar::Clause c2; c2.adverb = lex_.find("सुबह"); c2.subject = other; c2.object = tObj; c2.verb = tVerb; c2.tense = Tense::Past;
                   lines.push_back(grammar::renderClause(c2));
-                  grammar::Clause c3; c3.adverb = lex_.find("धीरे-धीरे"); c3.subject = hero; c3.verb = intr; c3.tense = grammar::Tense::Present;
+                  grammar::Clause c3; c3.adverb = lex_.find("धीरे-धीरे"); c3.subject = hero; c3.verb = intr; c3.tense = Tense::Present;
                   lines.push_back(grammar::renderClause(c3));
-                  grammar::Clause c4; c4.adverb = lex_.find("अचानक"); c4.subject = other; c4.verb = lex_.find("जीत"); c4.tense = grammar::Tense::Past;
+                  grammar::Clause c4; c4.adverb = lex_.find("अचानक"); c4.subject = other; c4.verb = lex_.find("जीत"); c4.tense = Tense::Past;
                   lines.push_back(grammar::renderClause(c4));
                   static const std::vector<std::string> kMorals = {
                       "सच्ची जीत उसी की होती है जो हार नहीं मानता।",
                       "लगातार मेहनत करने वाला ही अंत में सफल होता है।",
                       "कभी भी किसी को कमजोर नहीं समझना चाहिए।",
-                      "किस्मत भी उसी का साथ देती है जो कर्म करने से पीछे नहीं हटता।"
+                      "किस्मत भी उसी का साथ देती है जो कर्म करने से कभी पीछे नहीं हटता।"
                   };
                   lines.push_back(choose(kMorals, rng));
                   std::string title = morph::adjective(adj->surface, hero->gender, Number::Singular) + " " + hero->surface + (hero->gender == Gender::Feminine ? " की कहानी" : " का किस्सा");
@@ -1269,4 +1269,3 @@ jobs:
         with:
           name: Zeeshan-AI-Cpp-Powered-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-
