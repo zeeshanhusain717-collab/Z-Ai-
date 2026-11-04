@@ -1,4 +1,4 @@
-name: Build Zeeshan AI Ultimate Signed APK
+name: Build Zeeshan AI C++ Powered APK
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Signed Android Debug APK
+    name: Build Native C++ Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -37,6 +37,7 @@ jobs:
           mkdir -p app/src/main/java/com/zeeshan/ai
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/cpp
           echo "Directory structure created successfully."
 
       - name: 5. Write gradle.properties
@@ -69,7 +70,7 @@ jobs:
           }
           EOF
 
-      - name: 8. Write App-level build.gradle
+      - name: 8. Write App-level build.gradle with NDK/CMake
         run: |
           cat > app/build.gradle <<'EOF'
           plugins {
@@ -83,12 +84,23 @@ jobs:
                   applicationId "com.zeeshan.ai"
                   minSdk 26
                   targetSdk 34
-                  versionCode 8
-                  versionName "8.0"
+                  versionCode 9
+                  versionName "9.0"
+                  externalNativeBuild {
+                      cmake {
+                          cppFlags "-std=c++17 -O2"
+                      }
+                  }
               }
               buildTypes { 
                   release { minifyEnabled false }
                   debug { minifyEnabled false }
+              }
+              externalNativeBuild {
+                  cmake {
+                      path file("src/main/cpp/CMakeLists.txt")
+                      version "3.22.1"
+                  }
               }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
@@ -154,7 +166,827 @@ jobs:
           </manifest>
           EOF
 
-      - name: 12. Write MainActivity.kt with Smart AI Brain & 3D Glassmorphism UI
+      - name: 12. Write C++ Z2AI Brain Source File (Untouched 2x2 Copy)
+        run: |
+          cat > app/src/main/cpp/z2ai_brain.cpp <<'EOF'
+          #include <algorithm>
+          #include <array>
+          #include <cctype>
+          #include <chrono>
+          #include <cmath>
+          #include <cstddef>
+          #include <cstdint>
+          #include <iostream>
+          #include <map>
+          #include <optional>
+          #include <random>
+          #include <set>
+          #include <sstream>
+          #include <string>
+          #include <unordered_map>
+          #include <utility>
+          #include <vector>
+
+          namespace z2ai {
+
+          using CodePoint = char32_t;
+
+          std::vector<CodePoint> utf8Decode(const std::string& s) {
+              std::vector<CodePoint> out;
+              out.reserve(s.size());
+              std::size_t i = 0;
+              while (i < s.size()) {
+                  const unsigned char lead = static_cast<unsigned char>(s[i]);
+                  std::size_t len = 0;
+                  CodePoint cp = 0;
+                  if (lead < 0x80)              { len = 1; cp = lead; }
+                  else if ((lead >> 5) == 0x6)  { len = 2; cp = lead & 0x1F; }
+                  else if ((lead >> 4) == 0xE)  { len = 3; cp = lead & 0x0F; }
+                  else if ((lead >> 3) == 0x1E) { len = 4; cp = lead & 0x07; }
+                  else { out.push_back(0xFFFD); ++i; continue; }
+
+                  bool ok = (i + len <= s.size());
+                  for (std::size_t k = 1; ok && k < len; ++k) {
+                      const unsigned char cc = static_cast<unsigned char>(s[i + k]);
+                      if ((cc >> 6) != 0x2) ok = false;
+                      else cp = (cp << 6) | (cc & 0x3F);
+                  }
+                  if (!ok) { out.push_back(0xFFFD); ++i; continue; }
+                  out.push_back(cp);
+                  i += len;
+              }
+              return out;
+          }
+
+          std::string utf8Encode(CodePoint cp) {
+              std::string out;
+              if (cp < 0x80) {
+                  out += static_cast<char>(cp);
+              } else if (cp < 0x800) {
+                  out += static_cast<char>(0xC0 | (cp >> 6));
+                  out += static_cast<char>(0x80 | (cp & 0x3F));
+              } else if (cp < 0x10000) {
+                  out += static_cast<char>(0xE0 | (cp >> 12));
+                  out += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+                  out += static_cast<char>(0x80 | (cp & 0x3F));
+              } else {
+                  out += static_cast<char>(0xF0 | (cp >> 18));
+                  out += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+                  out += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+                  out += static_cast<char>(0x80 | (cp & 0x3F));
+              }
+              return out;
+          }
+
+          CodePoint lastCodePoint(const std::string& s) {
+              const auto cps = utf8Decode(s);
+              return cps.empty() ? CodePoint(0) : cps.back();
+          }
+
+          std::string dropLastCodePoint(const std::string& s) {
+              if (s.empty()) return s;
+              std::size_t i = s.size() - 1;
+              while (i > 0 && (static_cast<unsigned char>(s[i]) & 0xC0) == 0x80) --i;
+              return s.substr(0, i);
+          }
+
+          bool endsWith(const std::string& s, const std::string& suffix) {
+              return s.size() >= suffix.size() &&
+                     s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+          }
+
+          std::string trim(const std::string& s) {
+              const auto b = s.find_first_not_of(" \t\r\n");
+              if (b == std::string::npos) return "";
+              const auto e = s.find_last_not_of(" \t\r\n");
+              return s.substr(b, e - b + 1);
+          }
+
+          std::string toLowerAscii(std::string s) {
+              for (auto& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+              return s;
+          }
+
+          enum class CharClass {
+              IndependentVowel, Consonant, Nukta, VowelSign, Halant,
+              Anusvara, Chandrabindu, Visarga, Digit, Danda, Space, Latin, Other
+          };
+
+          CharClass classify(CodePoint cp) {
+              if (cp >= 0x0904 && cp <= 0x0914) return CharClass::IndependentVowel;
+              if ((cp >= 0x0915 && cp <= 0x0939) || (cp >= 0x0958 && cp <= 0x095F)) return CharClass::Consonant;
+              if (cp == 0x093C) return CharClass::Nukta;
+              if (cp >= 0x093E && cp <= 0x094C) return CharClass::VowelSign;
+              if (cp == 0x094D) return CharClass::Halant;
+              if (cp == 0x0902) return CharClass::Anusvara;
+              if (cp == 0x0901) return CharClass::Chandrabindu;
+              if (cp == 0x0903) return CharClass::Visarga;
+              if ((cp >= 0x0966 && cp <= 0x096F) || (cp >= U'0' && cp <= U'9')) return CharClass::Digit;
+              if (cp == 0x0964 || cp == 0x0965) return CharClass::Danda;
+              if (cp == U' ' || cp == U'\t' || cp == U'\n' || cp == U'\r') return CharClass::Space;
+              if ((cp >= U'a' && cp <= U'z') || (cp >= U'A' && cp <= U'Z')) return CharClass::Latin;
+              return CharClass::Other;
+          }
+
+          inline bool isNasal(CharClass c) {
+              return c == CharClass::Anusvara || c == CharClass::Chandrabindu || c == CharClass::Visarga;
+          }
+
+          namespace phonetics {
+          inline std::string vowelIndependent(CodePoint cp) {
+              switch (cp) {
+                  case 0x0905: return "a"; case 0x0906: return "aa"; case 0x0907: return "i";
+                  case 0x0908: return "ii"; case 0x0909: return "u"; case 0x090A: return "uu";
+                  case 0x090B: return "ri"; case 0x090F: return "e"; case 0x0910: return "ai";
+                  case 0x0913: return "o"; case 0x0914: return "au"; default: return "a";
+              }
+          }
+          inline std::string vowelMatra(CodePoint cp) {
+              switch (cp) {
+                  case 0x093E: return "aa"; case 0x093F: return "i"; case 0x0940: return "ii";
+                  case 0x0941: return "u"; case 0x0942: return "uu"; case 0x0943: return "ri";
+                  case 0x0947: return "e"; case 0x0948: return "ai"; case 0x094B: return "o";
+                  case 0x094C: return "au"; default: return "a";
+              }
+          }
+          inline const std::unordered_map<CodePoint, std::string>& consonantRoman() {
+              static const std::unordered_map<CodePoint, std::string> table = {
+                  {0x0915, "k"}, {0x0916, "kh"}, {0x0917, "g"}, {0x0918, "gh"}, {0x0919, "ng"},
+                  {0x091A, "ch"}, {0x091B, "chh"}, {0x091C, "j"}, {0x091D, "jh"}, {0x091E, "ny"},
+                  {0x091F, "T"}, {0x0920, "Th"}, {0x0921, "D"}, {0x0922, "Dh"}, {0x0923, "N"},
+                  {0x0924, "t"}, {0x0925, "th"}, {0x0926, "d"}, {0x0927, "dh"}, {0x0928, "n"},
+                  {0x092A, "p"}, {0x092B, "ph"}, {0x092C, "b"}, {0x092D, "bh"}, {0x092E, "m"},
+                  {0x092F, "y"}, {0x0930, "r"}, {0x0931, "R"}, {0x0932, "l"}, {0x0933, "L"},
+                  {0x0935, "v"}, {0x0936, "sh"}, {0x0937, "Sh"}, {0x0938, "s"}, {0x0939, "h"}
+              };
+              return table;
+          }
+          }
+
+          struct Akshara {
+              std::string text, base, vowel;
+              bool conjunct = false, independent = false, symbol = false, halantEnd = false;
+          };
+
+          std::vector<Akshara> syllabify(const std::string& text) {
+              const std::vector<CodePoint> cps = utf8Decode(text);
+              const std::size_t n = cps.size();
+              std::vector<Akshara> out;
+              std::size_t i = 0;
+              while (i < n) {
+                  const CharClass c = classify(cps[i]);
+                  if (c == CharClass::IndependentVowel) {
+                      Akshara a; a.independent = true; a.vowel = phonetics::vowelIndependent(cps[i]);
+                      a.base = a.text = utf8Encode(cps[i++]);
+                      while (i < n && isNasal(classify(cps[i]))) a.text += utf8Encode(cps[i++]);
+                      out.push_back(a);
+                  } else if (c == CharClass::Consonant) {
+                      Akshara a; a.vowel = "a"; a.base = utf8Encode(cps[i++]);
+                      if (i < n && classify(cps[i]) == CharClass::Nukta) a.base += utf8Encode(cps[i++]);
+                      while (i + 1 < n && classify(cps[i]) == CharClass::Halant && classify(cps[i + 1]) == CharClass::Consonant) {
+                          a.base += utf8Encode(cps[i]) + utf8Encode(cps[i + 1]); a.conjunct = true; i += 2;
+                          if (i < n && classify(cps[i]) == CharClass::Nukta) a.base += utf8Encode(cps[i++]);
+                      }
+                      a.text = a.base;
+                      if (i < n && classify(cps[i]) == CharClass::VowelSign) {
+                          a.vowel = phonetics::vowelMatra(cps[i]); a.text += utf8Encode(cps[i++]);
+                      } else if (i < n && classify(cps[i]) == CharClass::Halant) {
+                          a.vowel.clear(); a.halantEnd = true; a.text += utf8Encode(cps[i++]);
+                      }
+                      while (i < n && isNasal(classify(cps[i]))) a.text += utf8Encode(cps[i++]);
+                      out.push_back(a);
+                  } else if (c == CharClass::Space || c == CharClass::Digit || c == CharClass::Danda || c == CharClass::Latin || c == CharClass::Other) {
+                      Akshara a; a.symbol = true; a.base = a.text = utf8Encode(cps[i++]); out.push_back(a);
+                  } else {
+                      if (!out.empty() && !out.back().symbol) out.back().text += utf8Encode(cps[i]);
+                      ++i;
+                  }
+              }
+              return out;
+          }
+
+          std::string romanize(const Akshara& a) {
+              if (a.symbol) return a.text;
+              if (a.independent) return a.vowel;
+              std::string r;
+              for (CodePoint cp : utf8Decode(a.base)) {
+                  const auto& table = phonetics::consonantRoman();
+                  const auto it = table.find(cp);
+                  if (it != table.end()) r += it->second;
+              }
+              if (!a.halantEnd) r += a.vowel;
+              for (CodePoint cp : utf8Decode(a.text)) {
+                  if (cp == 0x0902 || cp == 0x0901) { r += "n"; break; }
+              }
+              return r;
+          }
+
+          void demoPhonetics() {
+              for (const char* w : {"स्वर्णिम", "क्षमा", "ज्ञान", "भारत", "सींचना"}) {
+                  for (const auto& a : syllabify(w)) { if (a.symbol) continue; }
+              }
+          }
+
+          namespace numbers {
+          const std::array<std::string, 100> kUnder100 = {{
+              "शून्य","एक","दो","तीन","चार","पाँच","छह","सात","आठ","नौ",
+              "दस","ग्यारह","बारह","तेरह","चौदह","पंद्रह","सोलह","सत्रह","अठारह","उन्नीस",
+              "बीस","इक्कीस","बाईस","तेईस","चौबीस","पच्चीस","छब्बीस","सत्ताईस","अट्ठाईस","उनतीस",
+              "तीस","इकतीस","बत्तीस","तैंतीस","चौंतीस","पैंतीस","छत्तीस","सैंतीस","अड़तीस","उनतालीस",
+              "चालीस","इकतालीस","बयालीस","तैंतालीस","चवालीस","पैंतालीस","छियालीस","सैंतालीस","अड़तालीस","उनचास",
+              "पचास","इक्यावन","बावन","तिरेपन","चौवन","पचपन","छप्पन","सत्तावन","अट्ठावन","उनसठ",
+              "साठ","इकसठ","बासठ","तिरसठ","चौंसठ","पैंसठ","छियासठ","सड़सठ","अड़सठ","उनहत्तर",
+              "सत्तर","इकहत्तर","बहत्तर","तिहत्तर","चौहत्तर","पचहत्तर","छिहत्तर","सतहत्तर","अठहत्तर","उन्यासी",
+              "अस्सी","इक्यासी","बयासी","तिरासी","चौरासी","पचासी","छियासी","सत्तासी","अट्ठासी","नवासी",
+              "नब्बे","इक्यानवे","बानवे","तिरानवे","चौरानवे","पंचानवे","छियानवे","सत्तानवे","अट्ठानवे","निन्यानवे"
+          }};
+          const std::array<std::string, 8> kScales = {{"हज़ार", "लाख", "करोड़", "अरब", "खरब", "नील", "पद्म", "शंख"}};
+
+          std::string threeDigit(int n) {
+              std::string out; int h = n / 100, r = n % 100;
+              if (h != 0) out = kUnder100[h] + " सौ";
+              if (r != 0) { if (!out.empty()) out += ' '; out += kUnder100[r]; }
+              return out;
+          }
+
+          std::string toHindi(std::string digits) {
+              const std::size_t firstNonZero = digits.find_first_not_of('0');
+              if (digits.empty() || firstNonZero == std::string::npos) return "शून्य";
+              digits.erase(0, firstNonZero);
+              if (digits.size() > 19) {
+                  const std::size_t split = digits.size() - 17;
+                  std::string out = toHindi(digits.substr(0, split)) + " शंख";
+                  const std::string low = digits.substr(split);
+                  if (low.find_first_not_of('0') != std::string::npos) out += " " + toHindi(low);
+                  return out;
+              }
+              const std::size_t len = digits.size();
+              const int hundreds = std::stoi(len > 3 ? digits.substr(len - 3) : digits);
+              std::string rest = len > 3 ? digits.substr(0, len - 3) : std::string();
+              std::vector<std::string> groups;
+              for (std::size_t k = 0; !rest.empty(); ++k) {
+                  const std::size_t take = rest.size() >= 2 ? 2 : 1;
+                  const int g = std::stoi(rest.substr(rest.size() - take));
+                  rest.erase(rest.size() - take);
+                  if (g != 0) groups.push_back(kUnder100[g] + " " + kScales[k]);
+              }
+              std::vector<std::string> words(groups.rbegin(), groups.rend());
+              if (hundreds != 0) words.push_back(threeDigit(hundreds));
+              std::string out;
+              for (std::size_t i = 0; i < words.size(); ++i) { if (i) out += ' '; out += words[i]; }
+              return out;
+          }
+          }
+
+          std::string spellNumber(const std::string& input) {
+              const bool negative = input.find('-') != std::string::npos;
+              std::string digits;
+              for (CodePoint cp : utf8Decode(input)) {
+                  if (cp >= U'0' && cp <= U'9') digits += static_cast<char>(cp);
+                  else if (cp >= 0x0966 && cp <= 0x096F) digits += static_cast<char>(U'0' + (cp - 0x0966));
+              }
+              if (digits.empty()) return "कृपया एक संख्या लिखिए, जैसे: 1500";
+              const std::string words = numbers::toHindi(digits);
+              return negative ? "ऋण " + words : words;
+          }
+
+          bool isNumericInput(const std::string& s) {
+              bool hasDigit = false;
+              for (CodePoint cp : utf8Decode(s)) {
+                  bool digit = (cp >= U'0' && cp <= U'9') || (cp >= 0x0966 && cp <= 0x096F);
+                  if (digit) { hasDigit = true; continue; }
+                  if (cp == U' ' || cp == U',' || cp == U'-') continue;
+                  return false;
+              }
+              return hasDigit;
+          }
+
+          enum class POS { Noun, Pronoun, Verb, Adjective, Postposition, Adverb, Conjunction };
+          enum class Gender { Masculine, Feminine };
+          enum class Number { Singular, Plural };
+          enum class Tense { Present, Past };
+
+          struct LexEntry {
+              std::string surface;
+              POS pos = POS::Noun;
+              Gender gender = Gender::Masculine;
+              bool animate = false;
+              bool transitive = false;
+              std::array<std::string, 3> irregularPast{};
+              std::string ergative;
+          };
+
+          class Lexicon {
+          public:
+              void add(LexEntry e) { entries_[e.surface] = std::move(e); }
+              const LexEntry* find(const std::string& w) const {
+                  auto it = entries_.find(w); return it == entries_.end() ? nullptr : &it->second;
+              }
+              std::size_t size() const { return entries_.size(); }
+          private:
+              std::map<std::string, LexEntry> entries_;
+          };
+
+          namespace morph {
+          std::string adjective(const std::string& base, Gender g, Number n) {
+              bool endsAa = (lastCodePoint(base) == 0x093E);
+              std::string stem = endsAa ? dropLastCodePoint(base) : base;
+              if (g == Gender::Masculine && n == Number::Singular) return base;
+              if (n == Number::Plural) return (g == Gender::Masculine) ? (endsAa ? stem + "े" : base) : (endsAa ? stem + "ी" : base);
+              return endsAa ? stem + "ी" : base + "ी";
+          }
+          std::string directPlural(const LexEntry& e) {
+              const std::string& s = e.surface; CodePoint last = lastCodePoint(s);
+              if (last == 0x0940) return dropLastCodePoint(s) + "ियाँ";
+              if (last == 0x093E) return (e.gender == Gender::Feminine) ? (s + "एँ") : (dropLastCodePoint(s) + "े");
+              if (last == 0x0906) return dropLastCodePoint(s) + "ए";
+              if (e.gender == Gender::Feminine) return s + "ें";
+              return s;
+          }
+          std::string obliqueSingular(const LexEntry& e) {
+              const std::string& s = e.surface; if (e.gender != Gender::Masculine) return s;
+              CodePoint last = lastCodePoint(s);
+              if (last == 0x093E) return dropLastCodePoint(s) + "े";
+              if (last == 0x0906) return dropLastCodePoint(s) + "ए";
+              return s;
+          }
+          std::string obliquePlural(const LexEntry& e) {
+              const std::string& s = e.surface; CodePoint last = lastCodePoint(s);
+              if (last == 0x0940) return dropLastCodePoint(s) + "ियों";
+              if (last == 0x093E) return (e.gender == Gender::Feminine) ? (s + "ओं") : (dropLastCodePoint(s) + "ों");
+              if (last == 0x0906) return dropLastCodePoint(s) + "ओं";
+              return s + "ों";
+          }
+          std::string nounHead(const LexEntry& e, Number n, bool takesPostposition) {
+              if (e.pos == POS::Pronoun) return e.surface;
+              return takesPostposition ? (n == Number::Plural ? obliquePlural(e) : obliqueSingular(e)) : (n == Number::Plural ? directPlural(e) : e.surface);
+          }
+          std::string conjugate(const LexEntry& v, Gender g, Number n, Tense t) {
+              const std::string& stem = v.surface;
+              if (t == Tense::Present) {
+                  if (n == Number::Plural && g == Gender::Masculine) return stem + "ते";
+                  if (g == Gender::Feminine) return stem + "ती";
+                  return stem + "ता";
+              }
+              std::size_t idx = (n == Number::Plural) ? 2 : (g == Gender::Feminine ? 1 : 0);
+              if (!v.irregularPast[idx].empty()) return v.irregularPast[idx];
+              bool endsAa = (lastCodePoint(stem) == 0x093E);
+              std::string base = endsAa ? stem + "य" : stem;
+              if (n == Number::Plural) return (g == Gender::Feminine) ? (base + "ीं") : (base + "े");
+              return (g == Gender::Feminine) ? (base + "ी") : (base + "ा");
+          }
+          std::string presentAux(Number n) { return (n == Number::Plural) ? "हैं" : "है"; }
+          }
+
+          namespace grammar {
+          struct Clause {
+              const LexEntry* subject = nullptr;
+              const LexEntry* subjectAdj = nullptr;
+              Number subjectNumber = Number::Singular;
+              const LexEntry* object = nullptr;
+              const LexEntry* objectAdj = nullptr;
+              Number objectNumber = Number::Singular;
+              const LexEntry* locative = nullptr;
+              const LexEntry* adverb = nullptr;
+              const LexEntry* verb = nullptr;
+              Tense tense = Tense::Present;
+          };
+
+          std::string renderClause(const Clause& c) {
+              if (!c.subject || !c.verb) return "";
+              bool ergative = c.verb->transitive && c.tense == Tense::Past;
+              std::vector<std::string> parts;
+              if (c.adverb) parts.push_back(c.adverb->surface);
+              std::string subjHead;
+              if (ergative && c.subject->pos == POS::Pronoun && !c.subject->ergative.empty()) {
+                  subjHead = c.subject->ergative;
+              } else {
+                  subjHead = morph::nounHead(*c.subject, c.subjectNumber, ergative);
+                  if (ergative) subjHead += " ने";
+              }
+              if (c.subjectAdj) {
+                  subjHead = morph::adjective(c.subjectAdj->surface, c.subject->gender, c.subjectNumber) + " " + subjHead;
+              }
+              parts.push_back(subjHead);
+              if (c.object) {
+                  bool takesKo = c.object->animate;
+                  std::string objHead = morph::nounHead(*c.object, c.objectNumber, takesKo);
+                  if (takesKo) objHead += " को";
+                  if (c.objectAdj) {
+                      objHead = morph::adjective(c.objectAdj->surface, c.object->gender, c.objectNumber) + " " + objHead;
+                  }
+                  parts.push_back(objHead);
+              }
+              if (c.locative) parts.push_back(c.locative->surface + " में");
+              Gender vg = c.subject->gender; Number vn = c.subjectNumber;
+              if (ergative) {
+                  if (c.object && !c.object->animate) { vg = c.object->gender; vn = c.objectNumber; }
+                  else { vg = Gender::Masculine; vn = Number::Singular; }
+              }
+              std::string verb = morph::conjugate(*c.verb, vg, vn, c.tense);
+              if (c.tense == Tense::Present) verb += " " + morph::presentAux(c.subjectNumber);
+              parts.push_back(verb);
+              std::string sentence;
+              for (std::size_t i = 0; i < parts.size(); ++i) { if (i) sentence += ' '; sentence += parts[i]; }
+              return sentence + "।";
+          }
+          }
+
+          Lexicon buildLexicon() {
+              Lexicon lex;
+              auto add = [&](std::string s, POS p, Gender g, bool anim = false, bool trans = false, std::array<std::string, 3> irr = {}, std::string erg = "") {
+                  LexEntry e; e.surface = std::move(s); e.pos = p; e.gender = g; e.animate = anim; e.transitive = trans; e.irregularPast = std::move(irr); e.ergative = std::move(erg);
+                  lex.add(std::move(e));
+              };
+              add("लोमड़ी", POS::Noun, Gender::Feminine, true);
+              add("कछुआ", POS::Noun, Gender::Masculine, true);
+              add("किसान", POS::Noun, Gender::Masculine, true);
+              add("लड़का", POS::Noun, Gender::Masculine, true);
+              add("लड़की", POS::Noun, Gender::Feminine, true);
+              add("बंदर", POS::Noun, Gender::Masculine, true);
+              add("शेर", POS::Noun, Gender::Masculine, true);
+              add("हाथी", POS::Noun, Gender::Masculine, true);
+              add("चिड़िया", POS::Noun, Gender::Feminine, true);
+              add("भालू", POS::Noun, Gender::Masculine, true);
+              add("रामू", POS::Noun, Gender::Masculine, true);
+              add("ज़ीशान", POS::Noun, Gender::Masculine, true);
+              add("जंगल", POS::Noun, Gender::Masculine);
+              add("गाँव", POS::Noun, Gender::Masculine);
+              add("नदी", POS::Noun, Gender::Feminine);
+              add("पहाड़", POS::Noun, Gender::Masculine);
+              add("खेत", POS::Noun, Gender::Masculine);
+              add("पेड़", POS::Noun, Gender::Masculine);
+              add("फसल", POS::Noun, Gender::Feminine);
+              add("पानी", POS::Noun, Gender::Masculine);
+              add("रोटी", POS::Noun, Gender::Feminine);
+              add("किताब", POS::Noun, Gender::Feminine);
+              add("बारिश", POS::Noun, Gender::Feminine);
+              add("सूखा", POS::Noun, Gender::Masculine);
+              add("बात", POS::Noun, Gender::Feminine);
+              add("मेहनत", POS::Noun, Gender::Feminine);
+              add("मैं", POS::Pronoun, Gender::Masculine, true, false, {}, "मैंने");
+              add("तुम", POS::Pronoun, Gender::Masculine, true, false, {}, "तुमने");
+              add("वह", POS::Pronoun, Gender::Masculine, true, false, {}, "उसने");
+              add("हम", POS::Pronoun, Gender::Masculine, true, false, {}, "हमने");
+              add("वे", POS::Pronoun, Gender::Masculine, true, false, {}, "उन्होंने");
+              add("यह", POS::Pronoun, Gender::Masculine);
+              add("खा", POS::Verb, Gender::Masculine, false, true);
+              add("पढ़", POS::Verb, Gender::Masculine, false, true);
+              add("लिख", POS::Verb, Gender::Masculine, false, true);
+              add("सींच", POS::Verb, Gender::Masculine, false, true);
+              add("देख", POS::Verb, Gender::Masculine, false, true);
+              add("समझ", POS::Verb, Gender::Masculine, false, true);
+              add("पकड़", POS::Verb, Gender::Masculine, false, true);
+              add("बना", POS::Verb, Gender::Masculine, false, true);
+              add("कर", POS::Verb, Gender::Masculine, false, true, {"किया", "की", "किए"});
+              add("जा", POS::Verb, Gender::Masculine, false, false, {"गया", "गई", "गए"});
+              add("रह", POS::Verb, Gender::Masculine, false, false);
+              add("सो", POS::Verb, Gender::Masculine, false, false);
+              add("उठ", POS::Verb, Gender::Masculine, false, false);
+              add("दौड़", POS::Verb, Gender::Masculine, false, false);
+              add("जीत", POS::Verb, Gender::Masculine, false, false);
+              add("लड़", POS::Verb, Gender::Masculine, false, false);
+              add("भोला", POS::Adjective, Gender::Masculine);
+              add("चालाक", POS::Adjective, Gender::Masculine);
+              add("बड़ा", POS::Adjective, Gender::Masculine);
+              add("छोटा", POS::Adjective, Gender::Masculine);
+              add("अच्छा", POS::Adjective, Gender::Masculine);
+              add("हरा", POS::Adjective, Gender::Masculine);
+              add("सुंदर", POS::Adjective, Gender::Masculine);
+              add("एक समय", POS::Adverb, Gender::Masculine);
+              add("धीरे-धीरे", POS::Adverb, Gender::Masculine);
+              add("अचानक", POS::Adverb, Gender::Masculine);
+              add("हमेशा", POS::Adverb, Gender::Masculine);
+              add("सुबह", POS::Adverb, Gender::Masculine);
+              add("को", POS::Postposition, Gender::Masculine);
+              add("में", POS::Postposition, Gender::Masculine);
+              add("से", POS::Postposition, Gender::Masculine);
+              add("और", POS::Conjunction, Gender::Masculine);
+              add("लेकिन", POS::Conjunction, Gender::Masculine);
+              add("क्योंकि", POS::Conjunction, Gender::Masculine);
+              return lex;
+          }
+
+          inline const char* kCorpus = R"CORPUS(
+          [हिंदी वर्णमाला और अक्षर ज्ञान]
+          स्वर: अ आ इ ई उ ऊ ऋ ए ऐ ओ औ अं अः
+          व्यंजन: क ख ग घ ङ च छ ज झ ञ ट ठ ड ढ ण त थ द ध न प फ ब भ म य र ल व श ष स ह क्ष त्र ज्ञ
+
+          [हिंदी गिनती]
+          एक दो तीन चार पाँच छह सात आठ नौ दस ग्यारह बारह तेरह चौदह पंद्रह सोलह सत्रह अठारह उन्नीस बीस
+          पहला दूसरा तीसरा चौथा पाँचवाँ छठा सातवाँ आठवाँ नौवाँ दसवाँ
+
+          [व्याकरण और वाक्य-रचना]
+          संज्ञा: राम, सीता, दिल्ली, किताब, आम, जंगल, किसान, लोमड़ी, कछुआ, गाँव, पानी, फसल, मेहनत।
+          सर्वनाम: मैं, तुम, वह, यह, हम, वे, मेरा, तुम्हारा, उसका।
+          क्रिया: है, था, गाती, पढ़ता, जाता, खाता, रहता, करती, दौड़ता, सोता, उठता, सींचता, जीतता।
+          विशेषण: चालाक, भोला, हरा-भरा, अच्छा, बड़ा, छोटा, सुंदर, तेज़, धीमा।
+          वाक्य-रचना: कर्ता कर्म क्रिया। किसान खेत में रहता है। रामू ने फसल सींची। लड़के ने कछुए को पकड़ा।
+
+          [क्रिएटर और प्रश्नोत्तर प्रोफ़ाइल]
+          यूजर: तुम्हारा नाम क्या है? एआई: मेरा नाम Z+2AI है, जिसे ज़ीशान ने शून्य से डिज़ाइन और विकसित किया है।
+          यूजर: तुम्हें किसने बनाया है? एआई: मुझे मेरे मालिक और डेवलपर ज़ीशान ने बनाया है।
+          यूजर: तुम्हारे रचयिता कौन हैं? एआई: मेरे रचयिता ज़ीशान हैं, जो इस सिस्टम के मुख्य प्रोग्रामर हैं।
+          यूजर: क्या तुम्हें ज़ीशान ने बनाया है? एआई: हाँ, मुझे ज़ीशान ने ही अपनी कोडिंग और तकनीकी कौशल से बनाया है।
+          यूजर: तुम्हारा मालिक कौन है? एआई: मेरे मालिक और निर्माता ज़ीशान हैं।
+          यूजर: ज़ीशान कौन हैं? एआई: ज़ीशान मेरे क्रिएटर और डेवलपर हैं, जिन्होंने मुझे सोचने और समझने की क्षमता दी है।
+          यूजर: तुम्हें बनाने का मुख्य उद्देश्य क्या है? एआई: शुद्ध हिंदी में टेक्स्ट समझना, डेटा का विश्लेषण करना और पूरी तरह ऑफ़लाइन रहकर उत्तर देना।
+          यूजर: क्या तुम हिंदी में बात कर सकते हो? एआई: हाँ, मैं शुद्ध हिंदी में बातचीत कर सकता हूँ।
+
+          [कहानी एक: चालाक लोमड़ी और भोला कछुआ]
+          एक समय की बात है, एक घने जंगल में एक चालाक लोमड़ी और एक भोला कछुआ रहते थे।
+          लोमड़ी अपनी तेज रफ्तार पर बहुत घमंड करती थी और कछुए को हमेशा नीचा दिखाती थी।
+          एक दिन कछुए को गुस्सा आया और उसने लोमड़ी को दौड़ की चुनौती दे डाली।
+          जंगल के सभी जानवर इस अनोखी दौड़ को देखने के लिए इकट्ठा हो गए।
+          दौड़ शुरू होते ही लोमड़ी हवा की तरह तेजी से आगे निकल गई।
+          कुछ दूर जाने के बाद लोमड़ी ने पीछे मुड़कर देखा तो कछुआ दूर-दूर तक नहीं दिखाई दिया।
+          लोमड़ी ने सोचा कि कछुआ तो बहुत धीरे चल रहा है, क्यों न थोड़ा आराम कर लिया जाए।
+          वह एक बड़े से बरगद के पेड़ की ठंडी छांव में लेट गई और गहरी नींद सो गई।
+          दूसरी तरफ कछुआ बिना रुके, अपनी धीमी लेकिन लगातार गति से आगे बढ़ता रहा।
+          चलते-चलते कछुआ सोते हुए लोमड़ी के पास से गुजर गया और आगे निकल गया।
+          जब लोमड़ी की आंख खुली, तो सूरज ढलने को था और उसने तेजी से दौड़ लगाई।
+          लेकिन जब वह फिनिश लाइन पर पहुँची, तो उसने देखा कि कछुआ पहले ही जीत चुका था।
+          सभी जानवरों ने कछुए की मेहनत और लगन देखकर उसकी जोरदार तारीफ की।
+          लोमड़ी को अपनी गलती का अहसास हुआ और उसका घमंड पूरी तरह टूट गया।
+          इस कहानी से हमें यह सीख मिलती है कि लगातार प्रयास करने वाला ही हमेशा सफल होता है।
+          कभी भी किसी को कमजोर नहीं समझना चाहिए क्योंकि हर किसी में अपनी खूबी होती है।
+          यह पूरी कहानी ज़ीशान द्वारा बनाए गए नियमों के अनुसार इस एआई में प्रशिक्षित की गई है।
+
+          [कहानी दो: मेहनती किसान रामू]
+          एक गाँव में रामू नाम का एक बहुत मेहनतकश किसान रहता था जिसके पास जमीन का एक छोटा टुकड़ा था।
+          रामू रोज सुबह सूरज निकलने से पहले उठता और अपने खेतों में कड़ी मेहनत करता था।
+          उसकी फसलें हमेशा हरी-भरी रहती थीं क्योंकि वह पौधों की अपने बच्चों की तरह देखभाल करता था।
+          गाँव के बाकी लोग कभी-कभी उसकी इस कड़ी मेहनत को देखकर हैरान रह जाते थे।
+          एक साल गाँव में भयंकर सूखा पड़ा और बारिश की एक बूंद भी नहीं गिरी।
+          सभी किसानों के खेत सूखने लगे और वे लोग बहुत ज्यादा परेशान और निराश हो गए।
+          लेकिन रामू ने हिम्मत नहीं हारी और उसने रात-दिन एक करके कुएं से पानी खींचकर पौधों को सींचा।
+          उसकी इस अटूट मेहनत और कभी हार न मानने वाली जिद को देखकर भगवान भी उसकी मदद के लिए आ गए।
+          अचानक आसमान में काले बादल छाए और झमाझम बारिश होने लगी जिससे पूरा इलाका हरा-भरा हो गया।
+          रामू की फसल इस बार सबसे अच्छी हुई और बाजार में उसे बहुत अच्छा दाम मिला।
+          उसने अपनी मेहनत की कमाई से गरीबों और जरूरतमंदों की हमेशा मदद की।
+          गाँव के बच्चे रामू को अपना आदर्श मानते थे और उससे प्रेरणा लेते थे।
+          रामू हमेशा कहता था कि इंसान की सच्ची ताकत उसकी मेहनत और उसका पक्का इरादा होता है।
+          किस्मत भी उसी का साथ देती है जो कर्म करने से कभी पीछे नहीं हटता।
+          इस एआई को बनाने वाले और इसे डिज़ाइन करने वाले एकमात्र डेवलपर ज़ीशान हैं।
+          )CORPUS";
+
+          std::vector<std::string> tokenize(const std::string& text) {
+              std::vector<std::string> toks; std::string cur;
+              auto flush = [&] { if (!cur.empty()) { toks.push_back(cur); cur.clear(); } };
+              for (CodePoint cp : utf8Decode(text)) {
+                  CharClass c = classify(cp);
+                  if (c == CharClass::Space) { flush(); continue; }
+                  bool punct = c == CharClass::Danda || cp == U',' || cp == U':' || cp == U';' || cp == U'?' || cp == U'!' || cp == U'.' || cp == U'"' || cp == U'(' || cp == U')';
+                  if (punct) { flush(); toks.push_back(utf8Encode(cp)); } else cur += utf8Encode(cp);
+              }
+              flush(); return toks;
+          }
+
+          std::string joinTokens(const std::vector<std::string>& toks) {
+              std::string out;
+              for (const auto& t : toks) {
+                  bool noSpaceBefore = (t == "।" || t == "," || t == ":" || t == "?" || t == "!" || t == ";");
+                  if (!out.empty() && !noSpaceBefore) out += ' ';
+                  out += t;
+              }
+              return out;
+          }
+
+          std::vector<std::string> splitLines(const std::string& s) {
+              std::vector<std::string> out; std::istringstream is(s); std::string line;
+              while (std::getline(is, line)) out.push_back(trim(line));
+              return out;
+          }
+
+          class NGramModel {
+          public:
+              static constexpr int kOrder = 3;
+              static constexpr double kLambda[kOrder] = {0.10, 0.30, 0.60};
+              static inline const std::string BOS = "<s>";
+              static inline const std::string EOS = "</s>";
+
+              void trainSentence(const std::vector<std::string>& tokens) {
+                  std::vector<std::string> seq = {BOS, BOS};
+                  seq.insert(seq.end(), tokens.begin(), tokens.end());
+                  seq.push_back(EOS);
+                  for (std::size_t i = 2; i < seq.size(); ++i) {
+                      for (int order = 0; order < kOrder; ++order) {
+                          auto first = seq.begin() + static_cast<std::ptrdiff_t>(i - order);
+                          auto last = seq.begin() + static_cast<std::ptrdiff_t>(i);
+                          std::vector<std::string> ctx(first, last);
+                          counts_[static_cast<std::size_t>(order)][ctx][seq[i]] += 1;
+                      }
+                      vocab_.insert(seq[i]);
+                  }
+              }
+
+              std::map<std::string, double> distribution(const std::vector<std::string>& hist) const {
+                  std::map<std::string, double> dist; double weightUsed = 0.0;
+                  for (int order = 0; order < kOrder; ++order) {
+                      if (hist.size() < static_cast<std::size_t>(order)) continue;
+                      std::vector<std::string> ctx(hist.end() - static_cast<std::ptrdiff_t>(order), hist.end());
+                      auto it = counts_[static_cast<std::size_t>(order)].find(ctx);
+                      if (it == counts_[static_cast<std::size_t>(order)].end()) continue;
+                      double total = 0.0; for (const auto& kv : it->second) total += kv.second;
+                      for (const auto& kv : it->second) dist[kv.first] += kLambda[order] * static_cast<double>(kv.second) / total;
+                      weightUsed += kLambda[order];
+                  }
+                  if (weightUsed > 0.0) for (auto& kv : dist) kv.second /= weightUsed;
+                  return dist;
+              }
+
+              std::vector<std::string> generate(const std::vector<std::string>& prompt, int maxTokens, double temperature, std::mt19937& rng, int minTokens = 4) const {
+                  std::vector<std::string> hist = {BOS, BOS};
+                  hist.insert(hist.end(), prompt.begin(), prompt.end());
+                  std::vector<std::string> out;
+                  for (int step = 0; step < maxTokens; ++step) {
+                      auto dist = distribution(hist);
+                      std::vector<std::pair<std::string, double>> cand; double total = 0.0;
+                      for (const auto& [word, prob] : dist) {
+                          if (word == BOS) continue;
+                          double w = std::pow(prob, 1.0 / temperature);
+                          std::size_t from = out.size() > 6 ? out.size() - 6 : 0;
+                          for (std::size_t k = from; k < out.size(); ++k) { if (out[k] == word) { w *= 0.35; break; } }
+                          cand.emplace_back(word, w); total += w;
+                      }
+                      if (cand.empty() || total <= 0.0) break;
+                      std::uniform_real_distribution<double> U(0.0, total);
+                      double r = U(rng); double acc = 0.0; std::string pick = cand.back().first;
+                      for (const auto& [word, w] : cand) { acc += w; if (r <= acc) { pick = word; break; } }
+                      if (pick == EOS) break;
+                      out.push_back(pick); hist.push_back(pick);
+                      if (pick == "।" && static_cast<int>(out.size()) >= minTokens) break;
+                  }
+                  return out;
+              }
+
+              std::size_t vocabSize() const { return vocab_.size(); }
+
+          private:
+              std::array<std::map<std::vector<std::string>, std::map<std::string, int>>, kOrder> counts_;
+              std::set<std::string> vocab_;
+          };
+
+          struct QAPair { std::vector<std::string> keywords; std::string answer; };
+
+          class KnowledgeBase {
+          public:
+              KnowledgeBase() {
+                  items_.push_back({{"नमस्ते", "नमस्कार", "हैलो", "सलाम"}, "नमस्ते! मैं Z+2AI हूँ। आप मुझसे कहानी सुन सकते हैं, कोई संख्या शब्दों में पूछ सकते हैं या हिंदी से जुड़े सवाल कर सकते हैं।"});
+                  items_.push_back({{"नाम"}, "मेरा नाम Z+2AI है। मुझे ज़ीशान ने शून्य से डिज़ाइन और विकसित किया है।"});
+                  items_.push_back({{"किसने", "बनाया", "बनाई", "रचयिता", "निर्माता", "मालिक", "क्रिएटर", "ज़ीशान", "जीशान"}, "मुझे ज़ीशान ने बनाया है। वे मेरे क्रिएटर, डेवलपर और मालिक हैं, और मेरी पूरी आर्किटेक्चर उन्होंने ही तैयार की है।"});
+                  items_.push_back({{"उद्देश्य", "मकसद", "क्यों बने", "क्यों बनाया"}, "मेरा मुख्य उद्देश्य शुद्ध हिंदी में टेक्स्ट समझना और रचना करना, डेटा का विश्लेषण करना, और पूरी तरह ऑफ़लाइन रहकर कहानियाँ व उत्तर देना है।"});
+                  items_.push_back({{"हिंदी", "हिन्दी"}, "हाँ, मैं शुद्ध हिंदी में बात कर सकता हूँ। मेरा व्याकरण कर्ता-कर्म-क्रिया (SOV) क्रम पर आधारित है, और मैं अक्षरों, मात्राओं और हलंत को पहचानता हूँ।"});
+                  items_.push_back({{"ऑफ़लाइन", "ऑफलाइन", "offline", "इंटरनेट"}, "हाँ, मैं पूरी तरह ऑफ़लाइन चलता हूँ। मेरा सारा ज्ञान इसी प्रोग्राम के भीतर है, मुझे इंटरनेट की ज़रूरत नहीं।"});
+                  items_.push_back({{"क्या कर सकते", "क्षमता", "क्या कर लेते", "कौन-कौन"}, "मैं तीन चीज़ें अच्छे से कर सकता हूँ: हिंदी अक्षरों और मात्राओं का विश्लेषण, किसी भी आकार की संख्या को हिंदी शब्दों में बदलना, और नई कहानियाँ गढ़ना। बाकी सवालों पर मैं अपने प्रशिक्षित हिंदी डेटा से उत्तर देता हूँ।"});
+              }
+
+              std::optional<std::string> answer(const std::string& query) const {
+                  std::string q = toLowerAscii(query); int best = 0; const QAPair* hit = nullptr;
+                  for (const auto& item : items_) {
+                      int score = 0; for (const auto& kw : item.keywords) { if (q.find(kw) != std::string::npos) ++score; }
+                      if (score > best) { best = score; hit = &item; }
+                  }
+                  if (hit) return hit->answer;
+                  return std::nullopt;
+              }
+
+          private:
+              std::vector<QAPair> items_;
+          };
+
+          class StoryWeaver {
+          public:
+              explicit StoryWeaver(const Lexicon& lex) : lex_(lex) {
+                  pool(animals_, {"लोमड़ी", "कछुआ", "किसान", "लड़का", "लड़की", "बंदर", "शेर", "हाथी", "चिड़िया", "भालू"});
+                  pool(places_, {"जंगल", "गाँव", "नदी", "पहाड़", "खेत", "पेड़"});
+                  pool(adjectives_, {"भोला", "बड़ा", "छोटा", "अच्छा", "हरा", "सुंदर", "चालाक"});
+                  pool(intransitive_, {"दौड़", "सो", "उठ", "जीत", "लड़"});
+                  pairs_ = {{"सींच", "फसल"}, {"सींच", "पानी"}, {"खा", "रोटी"}, {"पढ़", "किताब"}, {"देख", "नदी"}, {"देख", "पहाड़"}, {"लिख", "किताब"}, {"समझ", "बात"}, {"पकड़", "कछुआ"}, {"बना", "रोटी"}};
+              }
+
+              std::string weave(std::mt19937& rng) const {
+                  const LexEntry* hero = choose(animals_, rng);
+                  const LexEntry* other = choose(animals_, rng);
+                  while (other == hero) other = choose(animals_, rng);
+                  const LexEntry* place = choose(places_, rng);
+                  const LexEntry* adj = choose(adjectives_, rng);
+                  const LexEntry* intr = choose(intransitive_, rng);
+                  std::uniform_int_distribution<std::size_t> pd(0, pairs_.size() - 1);
+                  const auto& pr = pairs_[pd(rng)];
+                  const LexEntry* tVerb = lex_.find(pr.first);
+                  const LexEntry* tObj = lex_.find(pr.second);
+                  std::vector<std::string> lines;
+                  grammar::Clause c1; c1.adverb = lex_.find("एक समय"); c1.subject = hero; c1.subjectAdj = adj; c1.locative = place; c1.verb = lex_.find("रह"); c1.tense = grammar::Tense::Present;
+                  lines.push_back(grammar::renderClause(c1));
+                  grammar::Clause c2; c2.adverb = lex_.find("सुबह"); c2.subject = other; c2.object = tObj; c2.verb = tVerb; c2.tense = grammar::Tense::Past;
+                  lines.push_back(grammar::renderClause(c2));
+                  grammar::Clause c3; c3.adverb = lex_.find("धीरे-धीरे"); c3.subject = hero; c3.verb = intr; c3.tense = grammar::Tense::Present;
+                  lines.push_back(grammar::renderClause(c3));
+                  grammar::Clause c4; c4.adverb = lex_.find("अचानक"); c4.subject = other; c4.verb = lex_.find("जीत"); c4.tense = grammar::Tense::Past;
+                  lines.push_back(grammar::renderClause(c4));
+                  static const std::vector<std::string> kMorals = {
+                      "सच्ची जीत उसी की होती है जो हार नहीं मानता।",
+                      "लगातार मेहनत करने वाला ही अंत में सफल होता है।",
+                      "कभी भी किसी को कमजोर नहीं समझना चाहिए।",
+                      "किस्मत भी उसी का साथ देती है जो कर्म करने से पीछे नहीं हटता।"
+                  };
+                  lines.push_back(choose(kMorals, rng));
+                  std::string title = morph::adjective(adj->surface, hero->gender, Number::Singular) + " " + hero->surface + (hero->gender == Gender::Feminine ? " की कहानी" : " का किस्सा");
+                  std::string body; for (const auto& l : lines) body += l + "\n";
+                  return title + "\n\n" + body;
+              }
+
+          private:
+              void pool(std::vector<const LexEntry*>& dst, const std::vector<std::string>& names) {
+                  for (const auto& n : names) { if (const LexEntry* e = lex_.find(n)) dst.push_back(e); }
+              }
+              const Lexicon& lex_;
+              std::vector<const LexEntry*> animals_, places_, adjectives_, intransitive_;
+              std::vector<std::pair<std::string, std::string>> pairs_;
+          };
+
+          class Brain {
+          public:
+              Brain(const Lexicon& lex, const std::string& corpus) : weaver_(lex) {
+                  for (const auto& line : splitLines(corpus)) {
+                      if (line.empty() || line.front() == '[') continue;
+                      auto toks = tokenize(line);
+                      if (toks.empty()) continue;
+                      model_.trainSentence(toks);
+                      ++trainedSentences_; trainedTokens_ += toks.size();
+                  }
+              }
+
+              std::string respond(const std::string& input, std::mt19937& rng) const {
+                  std::string q = trim(input);
+                  if (q.empty()) return "कृपया कुछ लिखिए।";
+                  if (isNumericInput(q) || q.find("संख्या") != std::string::npos) return spellNumber(q);
+                  if (q.find("कहानी") != std::string::npos) return weaver_.weave(rng);
+                  if (auto known = kb_.answer(q)) return *known;
+                  auto toks = tokenize(q); std::vector<std::string> prompt;
+                  if (toks.size() >= 2) prompt.push_back(toks[toks.size() - 2]);
+                  if (!toks.empty()) prompt.push_back(toks.back());
+                  auto gen = model_.generate(prompt, 24, 0.75, rng);
+                  if (gen.empty()) return "मैं इस विषय पर अभी सीख रहा हूँ। कृपया कहानी, संख्या या सामान्य सवाल पूछें।";
+                  return joinTokens(gen);
+              }
+
+              std::string tellStory(std::mt19937& rng) const { return weaver_.weave(rng); }
+
+          private:
+              StoryWeaver weaver_;
+              NGramModel model_;
+              KnowledgeBase kb_;
+              std::size_t trainedSentences_ = 0;
+              std::size_t trainedTokens_ = 0;
+          };
+
+          } // namespace z2ai
+          EOF
+
+      - name: 13. Write JNI Native Bridge (`native-lib.cpp`)
+        run: |
+          cat > app/src/main/cpp/native-lib.cpp <<'EOF'
+          #include <jni.h>
+          #include <string>
+          #include <random>
+          #include <chrono>
+          #include <memory>
+          #include "z2ai_brain.cpp"
+
+          static z2ai::Lexicon g_lex;
+          static std::unique_ptr<z2ai::Brain> g_brain;
+          static std::mt19937 g_rng;
+
+          extern "C" JNIEXPORT jstring JNICALL
+          Java_com_zeeshan_ai_MainActivity_nativeGetAIResponse(JNIEnv* env, jobject /* this */, jstring query_) {
+              const char* queryChars = env->GetStringUTFChars(query_, nullptr);
+              std::string query(queryChars);
+              env->ReleaseStringUTFChars(query_, queryChars);
+
+              if (!g_brain) {
+                  g_lex = z2ai::buildLexicon();
+                  g_brain = std::make_unique<z2ai::Brain>(g_lex, z2ai::kCorpus);
+                  g_rng.seed(static_cast<std::uint32_t>(std::chrono::steady_clock::now().time_since_epoch().count()));
+              }
+
+              std::string response = g_brain->respond(query, g_rng);
+              return env->NewStringUTF(response.c_str());
+          }
+          EOF
+
+      - name: 14. Write CMakeLists.txt for NDK Compilation
+        run: |
+          cat > app/src/main/cpp/CMakeLists.txt <<'EOF'
+          cmake_minimum_required(VERSION 3.22.1)
+          project("z2ai")
+          add_library(z2ai SHARED native-lib.cpp)
+          find_library(log-lib log)
+          target_link_libraries(z2ai ${log-lib})
+          EOF
+
+      - name: 15. Write MainActivity.kt with Native C++ Bridge & 3D Glassmorphism UI
         run: |
           cat > app/src/main/java/com/zeeshan/ai/MainActivity.kt <<'EOF'
           package com.zeeshan.ai
@@ -171,6 +1003,14 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity
 
           class MainActivity : AppCompatActivity() {
+
+              companion object {
+                  init {
+                      System.loadLibrary("z2ai")
+                  }
+              }
+
+              private external fun nativeGetAIResponse(query: String): String
 
               private lateinit var chatContainer: LinearLayout
               private lateinit var scrollView: ScrollView
@@ -211,14 +1051,14 @@ jobs:
                   }
 
                   val titleTv = TextView(this).apply {
-                      text = "⚡ Zeeshan AI Ultimate"
+                      text = "⚡ Zeeshan AI Ultimate (C++)"
                       textSize = 20f
                       setTypeface(null, Typeface.BOLD)
                       setTextColor(Color.WHITE)
                   }
 
                   val subtitleTv = TextView(this).apply {
-                      text = "🟢 Installable Signed Build • 12+ Features"
+                      text = "🟢 C++ Native Engine Active • 12+ Features"
                       textSize = 12f
                       setTextColor(Color.parseColor("#38BDF8"))
                   }
@@ -279,7 +1119,7 @@ jobs:
                   }
 
                   inputMessage = EditText(this).apply {
-                      hint = "यहाँ कुछ भी टाइप करें (कोडिंग, गेम, रेसिपी...)"
+                      hint = "यहाँ कुछ भी टाइप करें (कोडिंग, कहानी, संख्या...)"
                       setHintTextColor(Color.parseColor("#94A3B8"))
                       setTextColor(Color.WHITE)
                       textSize = 15f
@@ -305,7 +1145,7 @@ jobs:
                           if (text.isNotEmpty()) {
                               addUserMessage(text)
                               inputMessage.setText("")
-                              triggerSmartAIResponse(text)
+                              triggerNativeAIResponse(text)
                           }
                       }
                       layoutParams = LinearLayout.LayoutParams(120, 120)
@@ -317,7 +1157,7 @@ jobs:
 
                   setContentView(mainRoot)
 
-                  addAIMessage("नमस्ते जीशान भाई! यह नया साइंड डिबग APK पूरी तरह तैयार है। आप इसे सीधे फोन में बिना किसी एरर के इंस्टॉल कर सकते हैं!")
+                  addAIMessage("नमस्ते जीशान भाई! मेरा C++ कॉग्निटिव इंजन अब आपके ऐप में एक्टिव हो चुका है। आप मुझसे संख्या, कहानी या कोई भी सवाल पूछ सकते हैं!")
               }
 
               private fun addUserMessage(message: String) {
@@ -371,45 +1211,16 @@ jobs:
                   }
               }
 
-              private fun triggerSmartAIResponse(userQuery: String) {
+              private fun triggerNativeAIResponse(userQuery: String) {
                   handler.postDelayed({
                       try {
-                          val response = when {
-                              userQuery.contains("cómo", ignoreCase = true) || userQuery.contains("कैसे हो", ignoreCase = true) || userQuery.contains("hello", ignoreCase = true) -> 
-                                  "मैं एकदम फर्स्ट-क्लास और वज्र-मजबूत हूँ जीशान भाई! यह साइंड ऐप आपके फोन में मक्खन की तरह इंस्टॉल होगा।"
-                              
-                              userQuery.contains("नाम", ignoreCase = true) || userQuery.contains("who are you", ignoreCase = true) -> 
-                                  "मेरा नाम Zeeshan AI Ultimate है, जिसे आपके विजन के अनुसार डिबग और साइन किया गया है।"
-                              
-                              userQuery.contains("apk", ignoreCase = true) || userQuery.contains("download", ignoreCase = true) -> 
-                                  "यह APK अब ऑटो-साइन्ड डिबग मोड में कंपाइल हुआ है, इसलिए बिना किसी इनवैलिड पैकेज एरर के आसानी से इंस्टॉल हो जाएगा!"
-                              
-                              userQuery.contains("game", ignoreCase = true) || userQuery.contains("free fire", ignoreCase = true) -> 
-                                  "गेमिंग का मज़ा ही अलग है भाई! बैटल रॉयल टाइटल्स और डिवाइस ऑप्टिमाइज़ेशन का कॉम्बिनेशन गजब है।"
-                              
-                              userQuery.contains("python", ignoreCase = true) || userQuery.contains("code", ignoreCase = true) -> 
-                                  "पायथन कोडिंग और मोबाइल डेवलपमेंट के लिए आपका लॉजिक और स्क्रिप्टिंग कमाल की है!"
-                              
-                              userQuery.contains("recipe", ignoreCase = true) || userQuery.contains("पराठा", ignoreCase = true) || userQuery.contains("khana", ignoreCase = true) -> 
-                                  "वाह जीशान भाई! मल्टीग्रेन पराठा (राई, मक्का, चना, गेहूं) और raw banana की हेल्दी रेसिपी सच में लाजवाब है।"
-                              
-                              userQuery.contains("battery", ignoreCase = true) || userQuery.contains("cpu", ignoreCase = true) -> 
-                                  "भले सीपीयू या बैटरी की पावर थोड़ी ज्यादा लगे, लेकिन यह ऐप कभी हैंग या क्रैश नहीं होगा—यह वादा है!"
-                              
-                              userQuery.contains("security", ignoreCase = true) || userQuery.contains("crash", ignoreCase = true) -> 
-                                  "सिस्टम पूरी तरह से क्रैश-प्रूफ और साइंड है। पैकेज पूरी तरह से वैलिड है!"
-                              
-                              userQuery.contains("help", ignoreCase = true) || userQuery.contains("मदद", ignoreCase = true) -> 
-                                  "मैं हर कदम पर आपकी मदद के लिए तैयार हूँ। आप मुझसे कोडिंग, ऐप्स या किसी भी विषय पर बात कर सकते हैं।"
-                              
-                              else -> 
-                                  "मैंने आपका इनपुट सुरक्षित रूप से समझ लिया है: \"$userQuery\"। यह साइंड ऑफलाइन स्मार्ट इंजन सुपर-फास्ट काम कर रहा है!"
-                          }
+                          // Calling the C++ Z2AI Brain directly via JNI
+                          val response = nativeGetAIResponse(userQuery)
                           addAIMessage(response)
                       } catch (e: Exception) {
-                          addAIMessage("सिस्टम पूरी तरह स्टेबल है जीशान भाई, सब कुछ ठीक से काम कर रहा है!")
+                          addAIMessage("C++ इंजन में प्रोसेस करते समय त्रुटि आई है भाई!")
                       }
-                  }, 900)
+                  }, 500)
               }
 
               private fun scrollToBottom() {
@@ -424,11 +1235,12 @@ jobs:
           }
           EOF
 
-      - name: 13. Compile and Build Signed Debug APK with Global Gradle
+      - name: 16. Compile and Build Signed Debug APK with C++ NDK
         run: gradle assembleDebug
 
-      - name: 14. Upload Signed APK Artifact for Download
+      - name: 17. Upload Signed C++ APK Artifact for Download
         uses: actions/upload-artifact@v4
         with:
-          name: Zeeshan-AI-Ultimate-Signed-Debug-APK
+          name: Zeeshan-AI-Cpp-Powered-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+
