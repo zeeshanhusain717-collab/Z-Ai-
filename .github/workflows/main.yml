@@ -83,8 +83,8 @@ jobs:
                   applicationId "com.zeeshan.ai"
                   minSdk 26
                   targetSdk 34
-                  versionCode 6
-                  versionName "6.0"
+                  versionCode 7
+                  versionName "7.0"
               }
               buildTypes { release { minifyEnabled false } }
               compileOptions {
@@ -215,7 +215,7 @@ jobs:
                   }
 
                   val subtitleTv = TextView(this).apply {
-                      text = "🟢 Step-by-Step Engineered • 12+ Features"
+                      text = "🟢 Step-by-Step Fixed • 12+ Features"
                       textSize = 12f
                       setTextColor(Color.parseColor("#38BDF8"))
                   }
@@ -314,7 +314,7 @@ jobs:
 
                   setContentView(mainRoot)
 
-                  addAIMessage("नमस्ते जीशान भाई! स्टेप-बाय-स्टेप बिल्ड रोबोट एक्टिव हो गया है। आप मुझसे गेमिंग, कोडिंग, पाइथन या रेसिपीज़ के बारे में बात कर सकते हैं!")
+                  addAIMessage("नमस्ते जीशान भाई! फिक्स्ड स्टेप-बाय-स्टेप बिल्ड रोबोट एक्टिव हो गया है। आप मुझसे गेमिंग, कोडिंग, पाइथन या रेसिपीज़ के बारे में बात कर सकते हैं!")
               }
 
               private fun addUserMessage(message: String) {
@@ -373,13 +373,13 @@ jobs:
                       try {
                           val response = when {
                               userQuery.contains("कैसे हो", ignoreCase = true) || userQuery.contains("hello", ignoreCase = true) -> 
-                                  "मैं एकदम फर्स्ट-क्लास और वज्र-मजबूत हूँ जीशान भाई! स्टेप-बाय-स्टेप बिल्ड प्रोसेस मक्खन की तरह चल रहा है।"
+                                  "मैं एकदम फर्स्ट-क्लास और वज्र-मजबूत हूँ जीशान भाई! फिक्स्ड बिल्ड प्रोसेस मक्खन की तरह चल रहा है।"
                               
                               userQuery.contains("नाम", ignoreCase = true) || userQuery.contains("who are you", ignoreCase = true) -> 
-                                  "मेरा नाम Zeeshan AI Ultimate है, जिसे आपके बेहतरीन विजन से स्टेप-बाय-स्टेप बनाया गया है।"
+                                  "मेरा नाम Zeeshan AI Ultimate है, जिसे आपके बेहतरीन विजन से बनाया गया है।"
                               
                               userQuery.contains("apk", ignoreCase = true) || userQuery.contains("download", ignoreCase = true) -> 
-                                  "यह APK अब गिटहब एक्शन्स के जरिए एक-एक स्टेप पार करते हुए सीधे Artifacts में डाउनलोड के लिए तैयार है!"
+                                  "यह APK अब गिटहब एक्शन्स पर सफलतापूर्वक कंपाइल होकर सीधे Artifacts में डाउनलोड के लिए तैयार हो रहा है!"
                               
                               userQuery.contains("game", ignoreCase = true) || userQuery.contains("free fire", ignoreCase = true) -> 
                                   "गेमिंग का मज़ा ही अलग है भाई! बैटल रॉयल टाइटल्स और डिवाइस ऑप्टिमाइज़ेशन का कॉम्बिनेशन गजब है।"
@@ -400,7 +400,7 @@ jobs:
                                   "मैं हर कदम पर आपकी मदद के लिए तैयार हूँ। आप मुझसे कोडिंग, ऐप्स या किसी भी विषय पर बात कर सकते हैं।"
                               
                               else -> 
-                                  "मैंने आपका इनपुट सुरक्षित रूप से समझ लिया है: \"$userQuery\"। यह स्टेप-बाय-स्टेप ऑफलाइन इंजन सुपर-फास्ट काम कर रहा है!"
+                                  "मैंने आपका इनपुट सुरक्षित रूप से समझ लिया है: \"$userQuery\"। यह ऑफलाइन स्मार्ट इंजन सुपर-फास्ट काम कर रहा है!"
                           }
                           addAIMessage(response)
                       } catch (e: Exception) {
@@ -421,12 +421,11 @@ jobs:
           }
           EOF
 
-      - name: 13. Compile and Build Release APK with Gradle
-        run: ./gradlew assembleRelease
+      - name: 13. Compile and Build Release APK with Global Gradle
+        run: gradle assembleRelease
 
       - name: 14. Upload APK Artifact for Download
         uses: actions/upload-artifact@v4
         with:
-          name: Zeeshan-AI-Ultimate-StepByStep-APK
+          name: Zeeshan-AI-Ultimate-Fixed-APK
           path: app/build/outputs/apk/release/app-release-unsigned.apk
-
