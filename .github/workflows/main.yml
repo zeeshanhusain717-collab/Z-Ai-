@@ -1,4 +1,4 @@
-name: Build Zeeshan AI Ultimate Step-by-Step APK
+name: Build Zeeshan AI Ultimate Signed APK
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Android APK Step-by-Step
+    name: Build Signed Android Debug APK
     runs-on: ubuntu-latest
 
     steps:
@@ -83,10 +83,13 @@ jobs:
                   applicationId "com.zeeshan.ai"
                   minSdk 26
                   targetSdk 34
-                  versionCode 7
-                  versionName "7.0"
+                  versionCode 8
+                  versionName "8.0"
               }
-              buildTypes { release { minifyEnabled false } }
+              buildTypes { 
+                  release { minifyEnabled false }
+                  debug { minifyEnabled false }
+              }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
@@ -215,7 +218,7 @@ jobs:
                   }
 
                   val subtitleTv = TextView(this).apply {
-                      text = "🟢 Step-by-Step Fixed • 12+ Features"
+                      text = "🟢 Installable Signed Build • 12+ Features"
                       textSize = 12f
                       setTextColor(Color.parseColor("#38BDF8"))
                   }
@@ -314,7 +317,7 @@ jobs:
 
                   setContentView(mainRoot)
 
-                  addAIMessage("नमस्ते जीशान भाई! फिक्स्ड स्टेप-बाय-स्टेप बिल्ड रोबोट एक्टिव हो गया है। आप मुझसे गेमिंग, कोडिंग, पाइथन या रेसिपीज़ के बारे में बात कर सकते हैं!")
+                  addAIMessage("नमस्ते जीशान भाई! यह नया साइंड डिबग APK पूरी तरह तैयार है। आप इसे सीधे फोन में बिना किसी एरर के इंस्टॉल कर सकते हैं!")
               }
 
               private fun addUserMessage(message: String) {
@@ -372,14 +375,14 @@ jobs:
                   handler.postDelayed({
                       try {
                           val response = when {
-                              userQuery.contains("कैसे हो", ignoreCase = true) || userQuery.contains("hello", ignoreCase = true) -> 
-                                  "मैं एकदम फर्स्ट-क्लास और वज्र-मजबूत हूँ जीशान भाई! फिक्स्ड बिल्ड प्रोसेस मक्खन की तरह चल रहा है।"
+                              userQuery.contains("cómo", ignoreCase = true) || userQuery.contains("कैसे हो", ignoreCase = true) || userQuery.contains("hello", ignoreCase = true) -> 
+                                  "मैं एकदम फर्स्ट-क्लास और वज्र-मजबूत हूँ जीशान भाई! यह साइंड ऐप आपके फोन में मक्खन की तरह इंस्टॉल होगा।"
                               
                               userQuery.contains("नाम", ignoreCase = true) || userQuery.contains("who are you", ignoreCase = true) -> 
-                                  "मेरा नाम Zeeshan AI Ultimate है, जिसे आपके बेहतरीन विजन से बनाया गया है।"
+                                  "मेरा नाम Zeeshan AI Ultimate है, जिसे आपके विजन के अनुसार डिबग और साइन किया गया है।"
                               
                               userQuery.contains("apk", ignoreCase = true) || userQuery.contains("download", ignoreCase = true) -> 
-                                  "यह APK अब गिटहब एक्शन्स पर सफलतापूर्वक कंपाइल होकर सीधे Artifacts में डाउनलोड के लिए तैयार हो रहा है!"
+                                  "यह APK अब ऑटो-साइन्ड डिबग मोड में कंपाइल हुआ है, इसलिए बिना किसी इनवैलिड पैकेज एरर के आसानी से इंस्टॉल हो जाएगा!"
                               
                               userQuery.contains("game", ignoreCase = true) || userQuery.contains("free fire", ignoreCase = true) -> 
                                   "गेमिंग का मज़ा ही अलग है भाई! बैटल रॉयल टाइटल्स और डिवाइस ऑप्टिमाइज़ेशन का कॉम्बिनेशन गजब है।"
@@ -394,13 +397,13 @@ jobs:
                                   "भले सीपीयू या बैटरी की पावर थोड़ी ज्यादा लगे, लेकिन यह ऐप कभी हैंग या क्रैश नहीं होगा—यह वादा है!"
                               
                               userQuery.contains("security", ignoreCase = true) || userQuery.contains("crash", ignoreCase = true) -> 
-                                  "सिस्टम पूरी तरह से क्रैश-प्रूफ है। हर स्टेप और एक्सेप्शन को सेफली हैंडल किया गया है!"
+                                  "सिस्टम पूरी तरह से क्रैश-प्रूफ और साइंड है। पैकेज पूरी तरह से वैलिड है!"
                               
                               userQuery.contains("help", ignoreCase = true) || userQuery.contains("मदद", ignoreCase = true) -> 
                                   "मैं हर कदम पर आपकी मदद के लिए तैयार हूँ। आप मुझसे कोडिंग, ऐप्स या किसी भी विषय पर बात कर सकते हैं।"
                               
                               else -> 
-                                  "मैंने आपका इनपुट सुरक्षित रूप से समझ लिया है: \"$userQuery\"। यह ऑफलाइन स्मार्ट इंजन सुपर-फास्ट काम कर रहा है!"
+                                  "मैंने आपका इनपुट सुरक्षित रूप से समझ लिया है: \"$userQuery\"। यह साइंड ऑफलाइन स्मार्ट इंजन सुपर-फास्ट काम कर रहा है!"
                           }
                           addAIMessage(response)
                       } catch (e: Exception) {
@@ -421,11 +424,11 @@ jobs:
           }
           EOF
 
-      - name: 13. Compile and Build Release APK with Global Gradle
-        run: gradle assembleRelease
+      - name: 13. Compile and Build Signed Debug APK with Global Gradle
+        run: gradle assembleDebug
 
-      - name: 14. Upload APK Artifact for Download
+      - name: 14. Upload Signed APK Artifact for Download
         uses: actions/upload-artifact@v4
         with:
-          name: Zeeshan-AI-Ultimate-Fixed-APK
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          name: Zeeshan-AI-Ultimate-Signed-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
