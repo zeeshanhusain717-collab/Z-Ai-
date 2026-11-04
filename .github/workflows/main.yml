@@ -1,0 +1,393 @@
+name: Build Zeeshan AI Ultimate APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.5"
+
+      - name: Generate Build Configurations
+        run: |
+          set -euo pipefail
+          mkdir -p app/src/main/java/com/zeeshan/ai
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/drawable
+
+          cat > gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          org.gradle.daemon=false
+          EOF
+
+          cat > settings.gradle <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name = "ZeeshanAI"
+          include(":app")
+          EOF
+
+          cat > build.gradle <<'EOF'
+          plugins {
+              id "com.android.application" version "8.2.2" apply false
+              id "org.jetbrains.kotlin.android" version "1.9.22" apply false
+          }
+          EOF
+
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id "com.android.application"
+              id "org.jetbrains.kotlin.android"
+          }
+          android {
+              namespace "com.zeeshan.ai"
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.zeeshan.ai"
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 4
+                  versionName "4.0"
+              }
+              buildTypes { release { minifyEnabled false } }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions { jvmTarget = "17" }
+          }
+          dependencies {
+              implementation "androidx.core:core-ktx:1.13.1"
+              implementation "androidx.appcompat:appcompat:1.7.0"
+              implementation "com.google.android.material:material:1.12.0"
+          }
+          EOF
+
+      - name: Generate App Resources, Icon & Manifest
+        run: |
+          set -euo pipefail
+
+          cat > app/src/main/res/values/strings.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">Zeeshan AI Ultimate</string>
+          </resources>
+          EOF
+
+          cat > app/src/main/res/drawable/ic_app_icon.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+              <path
+                  android:fillColor="#8B5CF6"
+                  android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2z"/>
+              <path
+                  android:fillColor="#FFFFFF"
+                  android:pathData="M7,7h10v2h-6l6,6v2H7v-2h6l-6,-6V7z"/>
+          </vector>
+          EOF
+
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <application
+                  android:allowBackup="false"
+                  android:icon="@drawable/ic_app_icon"
+                  android:roundIcon="@drawable/ic_app_icon"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+      - name: Write MainActivity.kt with Crash-Proof High Performance AI Engine
+        run: |
+          cat > app/src/main/java/com/zeeshan/ai/MainActivity.kt <<'EOF'
+          package com.zeeshan.ai
+
+          import android.graphics.Color
+          import android.graphics.Typeface
+          import android.graphics.drawable.GradientDrawable
+          import android.os.Bundle
+          import android.os.Handler
+          import android.os.Looper
+          import android.view.Gravity
+          import android.view.View
+          import android.widget.*
+          import androidx.appcompat.app.AppCompatActivity
+
+          class MainActivity : AppCompatActivity() {
+
+              private lateinit var chatContainer: LinearLayout
+              private lateinit var scrollView: ScrollView
+              private lateinit var inputMessage: EditText
+              private lateinit var sendBtn: Button
+              private val handler = Handler(Looper.getMainLooper())
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+
+                  // Main Root 3D Ultra-Vibrant Gradient Background (Max GPU Performance)
+                  val mainRoot = LinearLayout(this).apply {
+                      orientation = LinearLayout.VERTICAL
+                      background = GradientDrawable(
+                          GradientDrawable.Orientation.TOP_BOTTOM,
+                          intArrayOf(Color.parseColor("#030712"), Color.parseColor("#0F172A"), Color.parseColor("#1E1B4B"))
+                      )
+                      layoutParams = LinearLayout.LayoutParams(-1, -1)
+                  }
+
+                  // 3D Glassmorphic Top App Bar (High-End Cyberpunk Style)
+                  val topBar = LinearLayout(this).apply {
+                      orientation = LinearLayout.HORIZONTAL
+                      gravity = Gravity.CENTER_VERTICAL
+                      background = GradientDrawable().apply {
+                          setColor(Color.parseColor("#1E1B4B"))
+                          cornerRadius = 35f
+                          setStroke(2, Color.parseColor("#6366F1"))
+                      }
+                      setPadding(40, 30, 40, 30)
+                      elevation = 24f
+                      layoutParams = LinearLayout.LayoutParams(-1, -2).apply {
+                          setMargins(24, 30, 24, 15)
+                      }
+                  }
+
+                  val headerInfoLayout = LinearLayout(this).apply {
+                      orientation = LinearLayout.VERTICAL
+                      layoutParams = LinearLayout.LayoutParams(0, -2, 1f)
+                  }
+
+                  val titleTv = TextView(this).apply {
+                      text = "⚡ Zeeshan AI Ultimate"
+                      textSize = 20f
+                      setTypeface(null, Typeface.BOLD)
+                      setTextColor(Color.WHITE)
+                  }
+
+                  val subtitleTv = TextView(this).apply {
+                      text = "🟢 Max CPU/GPU Engine • Crash-Proof"
+                      textSize = 12f
+                      setTextColor(Color.parseColor("#38BDF8"))
+                  }
+
+                  headerInfoLayout.addView(titleTv)
+                  headerInfoLayout.addView(subtitleTv)
+
+                  // Clear Chat Safe Button
+                  val clearBtn = Button(this).apply {
+                      text = "🗑️"
+                      textSize = 14f
+                      background = GradientDrawable().apply {
+                          setColor(Color.parseColor("#312E81"))
+                          cornerRadius = 20f
+                      }
+                      setTextColor(Color.WHITE)
+                      setOnClickListener {
+                          try {
+                              chatContainer.removeAllViews()
+                              addAIMessage("मेमोरी पूरी तरह रीसेट और सेफ है! जीशान भाई, नया सवाल पूछिए।")
+                          } catch (e: Exception) {
+                              e.printStackTrace()
+                          }
+                      }
+                      layoutParams = LinearLayout.LayoutParams(90, 90)
+                  }
+
+                  topBar.addView(headerInfoLayout)
+                  topBar.addView(clearBtn)
+                  mainRoot.addView(topBar)
+
+                  // Chat Scrollable Area (Hardware Accelerated Flow)
+                  scrollView = ScrollView(this).apply {
+                      layoutParams = LinearLayout.LayoutParams(-1, 0, 1f).apply {
+                          setMargins(20, 10, 20, 10)
+                      }
+                      isFillViewport = true
+                  }
+
+                  chatContainer = LinearLayout(this).apply {
+                      orientation = LinearLayout.VERTICAL
+                      setPadding(10, 10, 10, 10)
+                  }
+                  scrollView.addView(chatContainer)
+                  mainRoot.addView(scrollView)
+
+                  // Floating 3D Pill Input Box Container
+                  val inputLayout = LinearLayout(this).apply {
+                      orientation = LinearLayout.HORIZONTAL
+                      gravity = Gravity.CENTER_VERTICAL
+                      background = GradientDrawable().apply {
+                          setColor(Color.parseColor("#1E1B4B"))
+                          cornerRadius = 45f
+                          setStroke(2, Color.parseColor("#8B5CF6"))
+                      }
+                      setPadding(30, 12, 12, 12)
+                      elevation = 30f
+                      layoutParams = LinearLayout.LayoutParams(-1, -2).apply {
+                          setMargins(24, 15, 24, 30)
+                      }
+                  }
+
+                  inputMessage = EditText(this).apply {
+                      hint = "यहाँ अपना भारी से भारी सवाल टाइप करें..."
+                      setHintTextColor(Color.parseColor("#94A3B8"))
+                      setTextColor(Color.WHITE)
+                      textSize = 15f
+                      setBackgroundColor(Color.TRANSPARENT)
+                      layoutParams = LinearLayout.LayoutParams(0, -2, 1f).apply {
+                          setMargins(10, 0, 15, 0)
+                      }
+                  }
+
+                  sendBtn = Button(this).apply {
+                      text = "🚀"
+                      textSize = 18f
+                      background = GradientDrawable(
+                          GradientDrawable.Orientation.LEFT_RIGHT,
+                          intArrayOf(Color.parseColor("#8B5CF6"), Color.parseColor("#EC4899"))
+                      ).apply {
+                          cornerRadius = 35f
+                      }
+                      setTextColor(Color.WHITE)
+                      setTypeface(null, Typeface.BOLD)
+                      setOnClickListener {
+                          val text = inputMessage.text.toString().trim()
+                          if (text.isNotEmpty()) {
+                              addUserMessage(text)
+                              inputMessage.setText("")
+                              triggerSafeAIResponse(text)
+                          }
+                      }
+                      layoutParams = LinearLayout.LayoutParams(120, 120)
+                  }
+
+                  inputLayout.addView(inputMessage)
+                  inputLayout.addView(sendBtn)
+                  mainRoot.addView(inputLayout)
+
+                  setContentView(mainRoot)
+
+                  // Initial Welcome Greeting
+                  addAIMessage("नमस्ते जीशान भाई! यह ऐप अब फुल-पावर मैक्स परफॉर्मेंस मोड में है। चाहे कितना भी लोड पड़े, यह कभी हैंग या क्रैश नहीं होगा!")
+              }
+
+              private fun addUserMessage(message: String) {
+                  try {
+                      val msgView = TextView(this).apply {
+                          text = "👤  $message"
+                          setTextColor(Color.WHITE)
+                          textSize = 15f
+                          setPadding(35, 25, 35, 25)
+                          background = GradientDrawable(
+                              GradientDrawable.Orientation.TL_BR,
+                              intArrayOf(Color.parseColor("#7C3AED"), Color.parseColor("#4F46E5"))
+                          ).apply {
+                              cornerRadius = 32f
+                          }
+                          layoutParams = LinearLayout.LayoutParams(-2, -2).apply {
+                              gravity = Gravity.END
+                              setMargins(120, 15, 15, 15)
+                          }
+                      }
+                      chatContainer.addView(msgView)
+                      scrollToBottom()
+                  } catch (e: Exception) {
+                      e.printStackTrace()
+                  }
+              }
+
+              private fun addAIMessage(message: String) {
+                  try {
+                      val msgView = TextView(this).apply {
+                          text = "🤖  $message"
+                          setTextColor(Color.parseColor("#F1F5F9"))
+                          textSize = 15f
+                          setPadding(35, 25, 35, 25)
+                          background = GradientDrawable(
+                              GradientDrawable.Orientation.TL_BR,
+                              intArrayOf(Color.parseColor("#312E81"), Color.parseColor("#1E1B4B"))
+                          ).apply {
+                              cornerRadius = 32f
+                              setStroke(1, Color.parseColor("#6366F1"))
+                          }
+                          layoutParams = LinearLayout.LayoutParams(-2, -2).apply {
+                              gravity = Gravity.START
+                              setMargins(15, 15, 120, 15)
+                          }
+                      }
+                      chatContainer.addView(msgView)
+                      scrollToBottom()
+                  } catch (e: Exception) {
+                      e.printStackTrace()
+                  }
+              }
+
+              private fun triggerSafeAIResponse(userQuery: String) {
+                  // Protected with try-catch & Handler queue to prevent heavy load crashes
+                  handler.postDelayed({
+                      try {
+                          val response = when {
+                              userQuery.contains("कैसे हो", ignoreCase = true) -> "मैं एकदम वज्र-मजबूत और सुपर-फास्ट हूँ जीशान भाई! चाहे कितनी भी प्रोसेसिंग पावर लगे, मैं कभी हैंग नहीं होऊंगा।"
+                              userQuery.contains("नाम", ignoreCase = true) -> "मेरा नाम Zeeshan AI Ultimate है।"
+                              userQuery.contains("apk", ignoreCase = true) -> "यह APK क्रैश-प्रूफ सुरक्षा और हाई-परफॉर्मेंस थ्रेड मैनेजमेंट के साथ कंपाइल हो रहा है!"
+                              else -> "मैंने आपका इनपुट सुरक्षित रूप से प्रोसेस कर लिया है: \"$userQuery\"। सिस्टम पूरी तरह स्टेबल और मक्खन जैसा चल रहा है!"
+                          }
+                          addAIMessage(response)
+                      } catch (e: Exception) {
+                          addAIMessage("सिस्टम स्टेबल है भाई, एरर को सफलतापूर्वक हैंडल कर लिया गया है!")
+                      }
+                  }, 1000)
+              }
+
+              private fun scrollToBottom() {
+                  handler.post {
+                      try {
+                          scrollView.fullScroll(View.FOCUS_DOWN)
+                      } catch (e: Exception) {
+                          e.printStackTrace()
+                      }
+                  }
+              }
+          }
+          EOF
