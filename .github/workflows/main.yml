@@ -30,18 +30,30 @@ jobs:
         with:
           gradle-version: "8.5"
 
-      - name: 4. Create Directory Structure Step-by-Step
+      - name: 4. Create Directory Structure Step-by-Step (Folders & Purpose)
         run: |
           set -euo pipefail
-          echo "Creating app directories..."
+          echo "=================================================="
+          echo "📂 Step 4: Creating structured directory hierarchy..."
+          echo "=================================================="
+          
+          echo "-> Creating Java/Kotlin source package directory: app/src/main/java/com/zeeshan/ai"
           mkdir -p app/src/main/java/com/zeeshan/ai
+          
+          echo "-> Creating Android resource values directory: app/src/main/res/values"
           mkdir -p app/src/main/res/values
+          
+          echo "-> Creating Android drawable graphics directory: app/src/main/res/drawable"
           mkdir -p app/src/main/res/drawable
+          
+          echo "-> Creating C++ NDK native source directory: app/src/main/cpp"
           mkdir -p app/src/main/cpp
-          echo "Directory structure created successfully."
+          
+          echo "✅ All app directories created successfully with precise architecture."
 
-      - name: 5. Write gradle.properties
+      - name: 5. Write gradle.properties (JVM & AndroidX Settings)
         run: |
+          echo "📝 Writing gradle.properties..."
           cat > gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8
           android.useAndroidX=true
@@ -49,8 +61,9 @@ jobs:
           org.gradle.daemon=false
           EOF
 
-      - name: 6. Write settings.gradle
+      - name: 6. Write settings.gradle (Project Structure Setup)
         run: |
+          echo "📝 Writing settings.gradle..."
           cat > settings.gradle <<'EOF'
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
@@ -61,8 +74,9 @@ jobs:
           include(":app")
           EOF
 
-      - name: 7. Write Root build.gradle
+      - name: 7. Write Root build.gradle (Plugins Definition)
         run: |
+          echo "📝 Writing Root build.gradle..."
           cat > build.gradle <<'EOF'
           plugins {
               id "com.android.application" version "8.2.2" apply false
@@ -72,6 +86,7 @@ jobs:
 
       - name: 8. Write App-level build.gradle with NDK/CMake
         run: |
+          echo "📝 Writing app/build.gradle with SDK 34 and CMake NDK support..."
           cat > app/build.gradle <<'EOF'
           plugins {
               id "com.android.application"
@@ -84,8 +99,8 @@ jobs:
                   applicationId "com.zeeshan.ai"
                   minSdk 26
                   targetSdk 34
-                  versionCode 9
-                  versionName "9.0"
+                  versionCode 10
+                  versionName "10.0"
                   externalNativeBuild {
                       cmake {
                           cppFlags "-std=c++17 -O2"
@@ -115,8 +130,9 @@ jobs:
           }
           EOF
 
-      - name: 9. Write Strings Resource File
+      - name: 9. Write Strings Resource File (`strings.xml`)
         run: |
+          echo "📝 Writing app/src/main/res/values/strings.xml..."
           cat > app/src/main/res/values/strings.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -124,8 +140,9 @@ jobs:
           </resources>
           EOF
 
-      - name: 10. Write App Icon Vector Drawable (Z-Theme)
+      - name: 10. Write App Icon Vector Drawable (`ic_app_icon.xml`)
         run: |
+          echo "📝 Writing app/src/main/res/drawable/ic_app_icon.xml..."
           cat > app/src/main/res/drawable/ic_app_icon.xml <<'EOF'
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
               android:width="108dp"
@@ -141,8 +158,9 @@ jobs:
           </vector>
           EOF
 
-      - name: 11. Write Android Manifest File
+      - name: 11. Write Android Manifest File (`AndroidManifest.xml`)
         run: |
+          echo "📝 Writing app/src/main/AndroidManifest.xml..."
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -166,8 +184,9 @@ jobs:
           </manifest>
           EOF
 
-      - name: 12. Write C++ Z2AI Brain Source File (Untouched 2x2 Copy)
+      - name: 12. Write C++ Z2AI Brain Source File (`z2ai_brain.cpp`)
         run: |
+          echo "📝 Writing C++ AI Core Brain: app/src/main/cpp/z2ai_brain.cpp..."
           cat > app/src/main/cpp/z2ai_brain.cpp <<'EOF'
           #include <algorithm>
           #include <array>
@@ -381,12 +400,6 @@ jobs:
               return r;
           }
 
-          void demoPhonetics() {
-              for (const char* w : {"स्वर्णिम", "क्षमा", "ज्ञान", "भारत", "सींचना"}) {
-                  for (const auto& a : syllabify(w)) { if (a.symbol) continue; }
-              }
-          }
-
           namespace numbers {
           const std::array<std::string, 100> kUnder100 = {{
               "शून्य","एक","दो","तीन","चार","पाँच","छह","सात","आठ","नौ",
@@ -394,7 +407,7 @@ jobs:
               "बीस","इक्कीस","बाईस","तेईस","चौबीस","पच्चीस","छब्बीस","सत्ताईस","अट्ठाईस","उनतीस",
               "तीस","इकतीस","बत्तीस","तैंतीस","चौंतीस","पैंतीस","छत्तीस","सैंतीस","अड़तीस","उनतालीस",
               "चालीस","इकतालीस","बयालीस","तैंतालीस","चवालीस","पैंतालीस","छियालीस","सैंतालीस","अड़तालीस","उनचास",
-              "पचास","इक्यावन","बावन","तिरेपन","चौवन","पचपन","छप्पन","सत्तावन","अट्ठावन","उनसठ",
+              "पचास","इक्यावन","बावन","तिरेपन","चौवन","pचपन","छप्पन","सत्तावन","अट्ठावन","उनसठ",
               "साठ","इकसठ","बासठ","तिरसठ","चौंसठ","पैंसठ","छियासठ","सड़सठ","अड़सठ","उनहत्तर",
               "सत्तर","इकहत्तर","बहत्तर","तिहत्तर","चौहत्तर","पचहत्तर","छिहत्तर","सतहत्तर","अठहत्तर","उन्यासी",
               "अस्सी","इक्यासी","बयासी","तिरासी","चौरासी","पचासी","छियासी","सत्तासी","अट्ठासी","नवासी",
@@ -855,6 +868,12 @@ jobs:
               std::vector<QAPair> items_;
           };
 
+          template <typename T>
+          T choose(const std::vector<T>& v, std::mt19937& rng) {
+              std::uniform_int_distribution<std::size_t> d(0, v.size() - 1);
+              return v[d(rng)];
+          }
+
           class StoryWeaver {
           public:
               explicit StoryWeaver(const Lexicon& lex) : lex_(lex) {
@@ -947,6 +966,7 @@ jobs:
 
       - name: 13. Write JNI Native Bridge (`native-lib.cpp`)
         run: |
+          echo "📝 Writing JNI Native Bridge: app/src/main/cpp/native-lib.cpp..."
           cat > app/src/main/cpp/native-lib.cpp <<'EOF'
           #include <jni.h>
           #include <string>
@@ -978,6 +998,7 @@ jobs:
 
       - name: 14. Write CMakeLists.txt for NDK Compilation
         run: |
+          echo "📝 Writing app/src/main/cpp/CMakeLists.txt..."
           cat > app/src/main/cpp/CMakeLists.txt <<'EOF'
           cmake_minimum_required(VERSION 3.22.1)
           project("z2ai")
@@ -988,6 +1009,7 @@ jobs:
 
       - name: 15. Write MainActivity.kt with Native C++ Bridge & 3D Glassmorphism UI
         run: |
+          echo "📝 Writing app/src/main/java/com/zeeshan/ai/MainActivity.kt..."
           cat > app/src/main/java/com/zeeshan/ai/MainActivity.kt <<'EOF'
           package com.zeeshan.ai
 
@@ -1236,7 +1258,11 @@ jobs:
           EOF
 
       - name: 16. Compile and Build Signed Debug APK with C++ NDK
-        run: gradle assembleDebug
+        run: |
+          echo "=================================================="
+          echo "⚙️ Step 16: Starting Gradle Build & NDK C++ Compilation..."
+          echo "=================================================="
+          gradle assembleDebug
 
       - name: 17. Upload Signed C++ APK Artifact for Download
         uses: actions/upload-artifact@v4
