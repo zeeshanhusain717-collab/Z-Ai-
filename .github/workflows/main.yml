@@ -547,8 +547,8 @@ jobs:
                   }
               };
 
-              // 7. Piyush Mishra Layer: Rooted Folk & Satire Core
-              struct Piyush Mishra {
+              // 7. Piyush Mishra Layer: Rooted Folk & Satire Core (Fixed struct name without space)
+              struct PiyushMishra {
                   static std::string apply(const std::string& story) {
                       return "🎭 [पीयूष मिश्रा स्टाइल ठेठ कटाक्ष]: \"दुनियादारी के इस बाजार में बाबू, हर कोई अपनी बोली लगवा रहा है!\"\n" + story;
                   }
@@ -561,8 +561,8 @@ jobs:
                   }
               };
 
-              // 9. Vishal Bhardwaj Layer: Dark Psyche & Grey Shades Core
-              struct Vishal Bhardwaj {
+              // 9. Vishal Bhardwaj Layer: Dark Psyche & Grey Shades Core (Fixed struct name without space)
+              struct VishalBhardwaj {
                   static std::string apply(const std::string& story) {
                       return "🌑 [विशाल भारद्वाज स्टाइल डार्क शेड्स]: \"महत्वाकांक्षा के अंधेरे कुएं में अच्छाई और बुराई की सीमाएं धुंधली हो चुकी थीं।\"\n" + story;
                   }
@@ -585,9 +585,9 @@ jobs:
                   if (query.find("ताकत") != std::string::npos || query.find("कमजोरी") != std::string::npos) return StanLee::apply(story);
                   if (query.find("भव्य") != std::string::npos || query.find("पर्वत") != std::string::npos) return Rajamouli::apply(story);
                   if (query.find("सस्पेंस") != std::string::npos || query.find("अचानक") != std::string::npos) return Tarantino::apply(story);
-                  if (query.find("माटी") != std::string::npos || query.find("कटाक्ष") != std::string::npos) return Piyush Mishra::apply(story);
+                  if (query.find("माटी") != std::string::npos || query.find("कटाक्ष") != std::string::npos) return PiyushMishra::apply(story);
                   if (query.find("करुणा") != std::string::npos || query.find("मासूम") != std::string::npos) return Spielberg::apply(story);
-                  if (query.find("अंधेरा") != std::string::npos || query.find("शक") != std::string::npos) return Vishal Bhardwaj::apply(story);
+                  if (query.find("अंधेरा") != std::string::npos || query.find("शक") != std::string::npos) return VishalBhardwaj::apply(story);
                   if (query.find("ब्रह्मांड") != std::string::npos || query.find("युद्ध") != std::string::npos) return Lucas::apply(story);
 
                   // Random selector if no specific keyword matched
@@ -598,9 +598,9 @@ jobs:
                       case 3: return StanLee::apply(story);
                       case 4: return Rajamouli::apply(story);
                       case 5: return Tarantino::apply(story);
-                      case 6: return Piyush Mishra::apply(story);
+                      case 6: return PiyushMishra::apply(story);
                       case 7: return Spielberg::apply(story);
-                      case 8: return Vishal Bhardwaj::apply(story);
+                      case 8: return VishalBhardwaj::apply(story);
                       default: return Lucas::apply(story);
                   }
               }
@@ -830,7 +830,7 @@ jobs:
           वाक्य-रचना: कर्ता कर्म क्रिया। किसान खेत में रहता है। रामू ने फसल सींची। लड़के ने कछुए को पकड़ा।
 
           [क्रिएटर और प्रश्नोत्तर प्रोफ़ाइल]
-          यूजर: तुम्हारा नाम क्या है? एआई: मेरा नाम Z+2AI है, जिसे ज़ीशान ने शून्य से डिज़ाइन और विकसित किया है।
+          यूजर: तुम्हारा नाम क्या है? एआई: मेरा नाम Z+2AI हूँ, जिसे ज़ीशान ने शून्य से डिज़ाइन और विकसित किया है।
           यूजर: तुम्हें किसने बनाया है? एआई: मुझे मेरे मालिक और डेवलपर ज़ीशान ने बनाया है।
           यूजर: तुम्हारे रचयिता कौन हैं? एआई: मेरे रचयिता ज़ीशान हैं, जो इस सिस्टम के मुख्य प्रोग्रामर हैं।
           यूजर: क्या तुम्हें ज़ीशान ने बनाया है? हाँ, मुझे ज़ीशान ने ही अपनी कोडिंग और तकनीकी कौशल से बनाया है।
@@ -886,7 +886,7 @@ jobs:
               }
 
               static std::string correctGrammar(std::string sentence) {
-                  if (!sentence.empty() && sentence.back() != '।' && sentence.back() != '?' && sentence.back() != '!') {
+                  if (!sentence.empty() && !endsWith(sentence, "।") && !endsWith(sentence, "?") && !endsWith(sentence, "!")) {
                       sentence += "।";
                   }
                   return sentence;
@@ -1450,3 +1450,4 @@ jobs:
         with:
           name: Zeeshan-AI-Cpp-Powered-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+
