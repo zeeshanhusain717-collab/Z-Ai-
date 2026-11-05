@@ -398,7 +398,7 @@ jobs:
                       } else if (i < n && classify(cps[i]) == CharClass::Halant) {
                           a.vowel.clear(); a.halantEnd = true; a.text += utf8Encode(cps[i++]);
                       }
-                      while (i < n && isNasal(classify(cps[i]))) a.text += utf8Decode(cps[i++]); // Safe decode check
+                      while (i < n && isNasal(classify(cps[i]))) a.text += utf8Encode(cps[i++]); // Fixed utf8Decode to utf8Encode
                       out.push_back(a);
                   } else if (c == CharClass::Space || c == CharClass::Digit || c == CharClass::Danda || c == CharClass::Latin || c == CharClass::Other) {
                       Akshara a; a.symbol = true; a.base = a.text = utf8Encode(cps[i++]); out.push_back(a);
@@ -547,7 +547,7 @@ jobs:
                   }
               };
 
-              // 7. Piyush Mishra Layer: Rooted Folk & Satire Core (Fixed struct name without space)
+              // 7. Piyush Mishra Layer: Rooted Folk & Satire Core
               struct PiyushMishra {
                   static std::string apply(const std::string& story) {
                       return "🎭 [पीयूष मिश्रा स्टाइल ठेठ कटाक्ष]: \"दुनियादारी के इस बाजार में बाबू, हर कोई अपनी बोली लगवा रहा है!\"\n" + story;
@@ -561,7 +561,7 @@ jobs:
                   }
               };
 
-              // 9. Vishal Bhardwaj Layer: Dark Psyche & Grey Shades Core (Fixed struct name without space)
+              // 9. Vishal Bhardwaj Layer: Dark Psyche & Grey Shades Core
               struct VishalBhardwaj {
                   static std::string apply(const std::string& story) {
                       return "🌑 [विशाल भारद्वाज स्टाइल डार्क शेड्स]: \"महत्वाकांक्षा के अंधेरे कुएं में अच्छाई और बुराई की सीमाएं धुंधली हो चुकी थीं।\"\n" + story;
@@ -1450,4 +1450,3 @@ jobs:
         with:
           name: Zeeshan-AI-Cpp-Powered-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-
